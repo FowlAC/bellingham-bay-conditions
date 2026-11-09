@@ -90,5 +90,3 @@ export async function onRequestGet() {
     });
   }
 }
-
-}
