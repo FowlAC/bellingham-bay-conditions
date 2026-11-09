@@ -239,54 +239,64 @@
 
 <main>
 
-  <section class="section">
-    <div class="section-heading">
-      <h2>Current Conditions</h2>
-      <span class="status">Data integration pending</span>
-    </div>
-<div class="cards">
-   
-<div class="card">
-  <div class="card-label">Wind Speed</div>
-  <div class="value" id="wind">--</div>
-  <div class="detail" id="wind-detail">
-    Loading buoy observations...
+ 
+<section class="section">
+  <div class="section-heading">
+    <h2>Current Conditions</h2>
+    <span class="status">Data integration pending</span>
   </div>
-  <div class="detail">NOAA NDBC · Se'lhaem buoy</div>
-</div>
 
+  <div class="cards">
 
-     
-<div class="card">
-  <div class="card-label">Wind Gusts</div>
-  <div class="value" id="gust">--</div>
-  <div class="detail" id="gust-detail">
-    Loading buoy observations...
-  </div>
-  <div class="detail">NOAA NDBC · Se'lhaem buoy</div>
-</div>
-
-
-      <div class="card">
-        <div class="card-label">Water Temperature</div>
-        <div class="value" id="water-temp">--</div>
-        <div class="detail">°F · Awaiting data</div>
+    <!-- Wind Speed -->
+    <div class="card">
+      <div class="card-label">Wind Speed</div>
+      <div class="value" id="wind">--</div>
+      <div class="detail" id="wind-detail">
+        Loading buoy observations...
       </div>
+      <div class="detail">
+        NOAA NDBC · Se'lhaem buoy
+      </div>
+    </div>
 
-      
-<div class="card">
-  <div class="card-label">Next Tide (Predicted)</div>
-  </div> <!-- End of cards grid -->
-  <div class="value" id="tide">--</div>
-  <div class="detail" id="tide-detail">
-    Loading NOAA predictions...
-  </div>
-  <div class="detail">
-    NOAA Bellingham · MLLW
-  </div>
-</div>
+    <!-- Wind Gusts -->
+    <div class="card">
+      <div class="card-label">Wind Gusts</div>
+      <div class="value" id="gust">--</div>
+      <div class="detail" id="gust-detail">
+        Loading buoy observations...
+      </div>
+      <div class="detail">
+        NOAA NDBC · Se'lhaem buoy
+      </div>
+    </div>
 
-  </section>
+    <!-- Water Temperature -->
+    <div class="card">
+      <div class="card-label">Water Temperature</div>
+      <div class="value" id="water-temp">--</div>
+      <div class="detail" id="water-temp-detail">
+        °F · Awaiting data
+      </div>
+    </div>
+
+    <!-- Next Tide -->
+    <div class="card">
+      <div class="card-label">Next Tide (Predicted)</div>
+      <div class="value" id="tide">--</div>
+      <div class="detail" id="tide-detail">
+        Loading NOAA predictions...
+      </div>
+      <div class="detail">
+        NOAA Bellingham · MLLW
+      </div>
+    </div>
+
+  </div><!-- End cards -->
+
+</section>
+
 
   <section class="section">
     <div class="section-heading">
