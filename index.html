@@ -264,12 +264,18 @@
         <div class="detail">°F · Awaiting data</div>
       </div>
 
-      <div class="card">
-        <div class="card-label">Tide Level</div>
-        <div class="value" id="tide">--</div>
-        <div class="detail">ft · Awaiting data</div>
-      </div>
-    </div>
+      
+<div class="card">
+  <div class="card-label">Next Tide (Predicted)</div>
+  <div class="value" id="tide">--</div>
+  <div class="detail" id="tide-detail">
+    Loading NOAA predictions...
+  </div>
+  <div class="detail">
+    NOAA Bellingham · MLLW
+  </div>
+</div>
+
   </section>
 
   <section class="section">
@@ -387,6 +393,65 @@
       document.getElementById("map-description").textContent = layer.description;
     });
   });
+
+  // Load NOAA Bellingham tide predictions.
+  async function loadTides() {
+    const tideValue = document.getElementById("tide");
+    const tideDetail = document.getElementById("tide-detail");
+
+    try {
+      const response = await fetch("/api/tides");
+
+      if (!response.ok) {
+        throw new Error("Tide API unavailable");
+      }
+
+      const data = await response.json();
+
+      if (!data.available || !data.nextTide) {
+        throw new Error("No tide predictions available");
+      }
+
+      const next = data.nextTide;
+      const height = Number(next.height);
+      const timestamp = new Date(next.time);
+
+      if (
+        !Number.isFinite(height) ||
+        !Number.isFinite(timestamp.getTime())
+      ) {
+        throw new Error("Invalid tide data");
+      }
+
+      const formattedTime = new Intl.DateTimeFormat(
+        "en-US",
+        {
+          timeZone: "America/Los_Angeles",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          timeZoneName: "short"
+        }
+      ).format(timestamp);
+
+      tideValue.textContent =
+        height.toFixed(1) + " ft";
+
+      tideDetail.textContent =
+        next.type + " tide · " + formattedTime;
+
+    } catch (error) {
+      console.error("Tide loading error:", error);
+      tideValue.textContent = "--";
+      tideDetail.textContent = "Tide data unavailable";
+    }
+  }
+
+  loadTides();
+
+  // Refresh every 15 minutes.
+  setInterval(loadTides, 15 * 60 * 1000);
 
   document.getElementById("local-date").textContent =
     new Intl.DateTimeFormat("en-US", {
