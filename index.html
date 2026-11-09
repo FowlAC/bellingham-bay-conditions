@@ -1,1 +1,402 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102d40">
+  <meta name="description" content="Bellingham Bay paddling conditions, including wind, tides, water temperature, currents, forecasts, and webcams.">
+  <title>Bellingham Bay Conditions</title>
+  <style>
+    :root {
+      --navy: #102d40;
+      --blue: #17648c;
+      --pale: #eaf3f7;
+      --bg: #f3f6f8;
+      --text: #233746;
+      --muted: #627583;
+      --border: #dbe4e9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 28px 20px;
+    }
+
+    .header-inner, main, footer {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: clamp(1.65rem, 4vw, 2.4rem);
+      margin: 0 0 5px;
+      letter-spacing: -.03em;
+    }
+
+    header p {
+      margin: 0;
+      color: #c7dce7;
+    }
+
+    main { padding: 24px 16px 40px; }
+
+    h2 {
+      font-size: 1.25rem;
+      margin: 0 0 16px;
+    }
+
+    .section { margin-bottom: 30px; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .section-heading h2 { margin: 0; }
+
+    .small {
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card, .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 19px;
+      box-shadow: 0 2px 9px rgba(18,45,65,.035);
+    }
+
+    .card-label {
+      font-size: .87rem;
+      color: var(--muted);
+      margin-bottom: 9px;
+    }
+
+    .value {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -.04em;
+      color: var(--navy);
+    }
+
+    .detail {
+      font-size: .79rem;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 20px;
+      background: var(--pale);
+      color: var(--blue);
+      font-size: .76rem;
+      font-weight: 600;
+    }
+
+    .map {
+      min-height: 330px;
+      border-radius: 9px;
+      border: 1px dashed #b4cbd7;
+      background: linear-gradient(145deg, #d7eaf3, #a8d1e4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .map-message {
+      max-width: 350px;
+      color: #214961;
+    }
+
+    .map-message strong {
+      font-size: 1.25rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: #f5f8fa;
+      padding: 9px 17px;
+      border-radius: 7px;
+      font: inherit;
+      font-size: .9rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    button.active {
+      background: var(--navy);
+      color: white;
+      border-color: var(--navy);
+    }
+
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid #e4a642;
+      outline-offset: 3px;
+    }
+
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    .resource {
+      display: block;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .resource:hover { background: var(--pale); }
+
+    .resource strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .resource span {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
+    .notice {
+      border-left: 4px solid #d4a04c;
+      background: #fffaf0;
+      padding: 15px 18px;
+      border-radius: 5px;
+      font-size: .88rem;
+    }
+
+    footer {
+      padding: 10px 16px 32px;
+      font-size: .79rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media(max-width: 750px) {
+      .cards { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .resource-grid { grid-template-columns: 1fr; }
+      .card { padding: 14px; }
+      .value { font-size: 1.65rem; }
+      .map { min-height: 270px; }
+    }
+
+    @media(max-width: 350px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>Bellingham Bay Conditions</h1>
+    <p>Wind, tides, currents, and local conditions for paddlers</p>
+  </div>
+</header>
+
+<main>
+
+  <section class="section">
+    <div class="section-heading">
+      <h2>Current Conditions</h2>
+      <span class="status">Data integration pending</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Wind Speed</div>
+        <div class="value" id="wind">--</div>
+        <div class="detail" id="wind-detail">mph · Awaiting data</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Wind Gusts</div>
+        <div class="value" id="gust">--</div>
+        <div class="detail">mph · Awaiting data</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Water Temperature</div>
+        <div class="value" id="water-temp">--</div>
+        <div class="detail">°F · Awaiting data</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Tide Level</div>
+        <div class="value" id="tide">--</div>
+        <div class="detail">ft · Awaiting data</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-heading">
+      <h2>Bellingham Bay in Motion</h2>
+      <span class="small">NOAA model visualization · Planned</span>
+    </div>
+
+    <div class="panel">
+      <div class="tabs" role="group" aria-label="Map layers">
+        <button class="active" data-layer="currents" aria-pressed="true">Currents</button>
+        <button data-layer="wind" aria-pressed="false">Wind</button>
+        <button data-layer="waves" aria-pressed="false">Waves</button>
+      </div>
+
+      <div class="map" role="status" aria-live="polite">
+        <div class="map-message">
+          <strong id="map-title">Ocean Current Map</strong>
+          <p id="map-description">
+            Animated surface currents and velocity heatmap
+            will appear here once the NOAA model is connected.
+          </p>
+        </div>
+      </div>
+
+      <p class="small">
+        Planned: animated flow particles, color-coded speeds,
+        and a forecast timeline. Model predictions will be
+        labeled separately from measured observations.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Forecasts &amp; Local Resources</h2>
+    <div class="panel">
+      <div class="resource-grid">
+        <a class="resource"
+           href="https://forecast.weather.gov/"
+           target="_blank" rel="noopener noreferrer">
+          <strong>National Weather Service</strong>
+          <span>Official weather forecasts</span>
+        </a>
+
+        <a class="resource"
+           href="https://tidesandcurrents.noaa.gov/"
+           target="_blank" rel="noopener noreferrer">
+          <strong>NOAA Tides &amp; Currents</strong>
+          <span>Water levels and predictions</span>
+        </a>
+
+        <a class="resource"
+           href="https://nwem.apl.uw.edu/"
+           target="_blank" rel="noopener noreferrer">
+          <strong>UW Buoy Network</strong>
+          <span>Local marine observations</span>
+        </a>
+
+        <a class="resource"
+           href="https://surfski.wiki/bellingham_local_conditions"
+           target="_blank" rel="noopener noreferrer">
+          <strong>Bellingham Cameras &amp; Resources</strong>
+          <span>Post Point, Marine Park, and local links</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="notice">
+      <strong>Safety information:</strong>
+      This dashboard is informational and is not a substitute
+      for checking official forecasts, weather warnings,
+      local conditions, and your own paddling abilities.
+      Model forecasts may not accurately represent nearshore conditions.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Bellingham Bay Conditions · Pacific Time ·
+  <span id="local-date"></span>
+  <p>Data attribution and observation timestamps will be displayed as feeds are connected.</p>
+</footer>
+
+<script>
+  // Initial dashboard: no live measurements are connected yet.
+
+  const descriptions = {
+    currents: {
+      title: "Ocean Current Map",
+      description: "Animated surface currents and velocity heatmap will appear here once the NOAA model is connected."
+    },
+    wind: {
+      title: "Wind Map",
+      description: "Forecast wind speed, direction, and gust overlays will be added after validating a suitable gridded data source."
+    },
+    waves: {
+      title: "Wave Map",
+      description: "Wave visualization is planned if sufficiently detailed and reliable local model data is available."
+    }
+  };
+
+  document.querySelectorAll("[data-layer]").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-layer]").forEach(b => {
+        const selected = b === button;
+        b.classList.toggle("active", selected);
+        b.setAttribute("aria-pressed", String(selected));
+      });
+
+      const layer = descriptions[button.dataset.layer];
+      document.getElementById("map-title").textContent = layer.title;
+      document.getElementById("map-description").textContent = layer.description;
+    });
+  });
+
+  document.getElementById("local-date").textContent =
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Los_Angeles",
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }).format(new Date());
+</script>
+
+</body>
+</html>
+
