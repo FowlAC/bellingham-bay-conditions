@@ -245,18 +245,27 @@
       <span class="status">Data integration pending</span>
     </div>
 
-    <div class="cards">
-      <div class="card">
-        <div class="card-label">Wind Speed</div>
-        <div class="value" id="wind">--</div>
-        <div class="detail" id="wind-detail">mph · Awaiting data</div>
-      </div>
+   
+<div class="card">
+  <div class="card-label">Wind Speed</div>
+  <div class="value" id="wind">--</div>
+  <div class="detail" id="wind-detail">
+    Loading buoy observations...
+  </div>
+  <div class="detail">NOAA NDBC · Se'lhaem buoy</div>
+</div>
 
-      <div class="card">
-        <div class="card-label">Wind Gusts</div>
-        <div class="value" id="gust">--</div>
-        <div class="detail">mph · Awaiting data</div>
-      </div>
+
+     
+<div class="card">
+  <div class="card-label">Wind Gusts</div>
+  <div class="value" id="gust">--</div>
+  <div class="detail" id="gust-detail">
+    Loading buoy observations...
+  </div>
+  <div class="detail">NOAA NDBC · Se'lhaem buoy</div>
+</div>
+
 
       <div class="card">
         <div class="card-label">Water Temperature</div>
@@ -447,6 +456,96 @@
       tideDetail.textContent = "Tide data unavailable";
     }
   }
+
+  // Load real-time wind observations from Se'lhaem buoy.
+  async function loadWind() {
+    const windValue = document.getElementById("wind");
+    const windDetail = document.getElementById("wind-detail");
+    const gustValue = document.getElementById("gust");
+    const gustDetail = document.getElementById("gust-detail");
+
+    try {
+      const response = await fetch("/api/wind");
+
+      if (!response.ok) {
+        throw new Error("Wind API unavailable");
+      }
+
+      const data = await response.json();
+
+      if (!data.available) {
+        throw new Error("Wind observations are stale or unavailable");
+      }
+
+      const observed = new Date(data.observationTime);
+
+      if (!Number.isFinite(observed.getTime())) {
+        throw new Error("Invalid observation timestamp");
+      }
+
+      const formattedTime = new Intl.DateTimeFormat(
+        "en-US", {
+          timeZone: "America/Los_Angeles",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          timeZoneName: "short"
+        }
+      ).format(observed);
+
+      // Convert wind degrees to compass direction.
+      const compass = degrees => {
+        if (degrees === null || degrees === undefined) {
+          return "Unknown";
+        }
+
+        const directions = [
+          "N", "NNE", "NE", "ENE",
+          "E", "ESE", "SE", "SSE",
+          "S", "SSW", "SW", "WSW",
+          "W", "WNW", "NW", "NNW"
+        ];
+
+        return directions[
+          Math.round(degrees / 22.5) % 16
+        ];
+      };
+
+      const speed = Number(data.windSpeed);
+      const gust = Number(data.windGust);
+
+      windValue.textContent =
+        Number.isFinite(speed)
+          ? speed.toFixed(1) + " mph"
+          : "--";
+
+      gustValue.textContent =
+        Number.isFinite(gust)
+          ? gust.toFixed(1) + " mph"
+          : "--";
+
+      const direction = compass(data.windDirection);
+
+      windDetail.textContent =
+        direction + " (" +
+        (data.windDirection ?? "--") +
+        "°) · " + formattedTime;
+
+      gustDetail.textContent =
+        "Observed " + formattedTime;
+
+    } catch (error) {
+      console.error("Wind loading error:", error);
+      windValue.textContent = "--";
+      gustValue.textContent = "--";
+      windDetail.textContent = "Wind data unavailable";
+      gustDetail.textContent = "Wind data unavailable";
+    }
+  }
+
+  loadWind();
+  setInterval(loadWind, 5 * 60 * 1000);
 
   loadTides();
 
