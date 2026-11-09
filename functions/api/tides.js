@@ -1,13 +1,22 @@
 
 export async function onRequestGet() {
+  const now = new Date();
+
+  const formatDate = date =>
+    date.toISOString().slice(0, 10).replace(/-/g, "");
+
+  const end = new Date(now.getTime() + 3 * 86400000);
+
   const url = new URL(
     "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
   );
 
   url.search = new URLSearchParams({
-    date: "latest",
+    begin_date: formatDate(now),
+    end_date: formatDate(end),
     station: "9449211",
-    product: "water_level",
+    product: "predictions",
+    interval: "hilo",
     datum: "MLLW",
     time_zone: "gmt",
     units: "english",
@@ -17,7 +26,7 @@ export async function onRequestGet() {
 
   try {
     const response = await fetch(url.toString(), {
-      cf: { cacheTtl: 300, cacheEverything: true }
+      cf: { cacheTtl: 900, cacheEverything: true }
     });
 
     if (!response.ok) {
@@ -30,37 +39,56 @@ export async function onRequestGet() {
       throw new Error(data.error.message || "NOAA API error");
     }
 
-    const readings = data.data || [];
-    const latest = readings[readings.length - 1];
+    const predictions = (data.predictions || [])
+      .map(p => ({
+        type: p.type === "H" ? "High" : "Low",
+        height: Number(p.v),
+        time: p.t.replace(" ", "T") + "Z"
+      }))
+      .filter(p =>
+        Number.isFinite(p.height) &&
+        Number.isFinite(Date.parse(p.time))
+      );
 
-    if (!latest || !Number.isFinite(Number(latest.v))) {
-      throw new Error("No valid water level available");
+    const upcoming = predictions.filter(
+      p => Date.parse(p.time) > now.getTime()
+    );
+
+    if (!upcoming.length) {
+      throw new Error("No upcoming tide predictions found");
     }
 
     return Response.json({
       available: true,
       station: "Bellingham, WA",
       stationId: "9449211",
-      waterLevel: Number(latest.v),
-      units: "ft",
+      dataType: "prediction",
       datum: "MLLW",
-      observationTime: latest.t + " UTC",
+      units: "ft",
+      nextTide: upcoming[0],
+      upcomingTides: upcoming.slice(0, 6),
       source: "NOAA CO-OPS",
       sourceUrl:
-        "https://tidesandcurrents.noaa.gov/stationhome.html?id=9449211"
+        "https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=9449211"
     }, {
-      headers: { "Cache-Control": "public, max-age=300" }
+      headers: {
+        "Cache-Control": "public, max-age=300"
+      }
     });
 
   } catch (error) {
     return Response.json({
       available: false,
       station: "Bellingham, WA",
-      waterLevel: null,
+      nextTide: null,
       error: error.message
     }, {
       status: 503,
-      headers: { "Cache-Control": "no-store" }
+      headers: {
+        "Cache-Control": "no-store"
+      }
     });
   }
+}
+
 }
