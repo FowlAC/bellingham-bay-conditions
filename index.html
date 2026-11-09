@@ -558,6 +558,62 @@
   loadWind();
   setInterval(loadWind, 5 * 60 * 1000);
 
+  // Load water temperature from the Se'lhaem buoy.
+  async function loadWaterTemperature() {
+    const value = document.getElementById("water-temp");
+    const detail = document.getElementById("water-temp-detail");
+
+    try {
+      const response = await fetch("/api/water-temp");
+      const data = await response.json();
+
+      const observed = data.observationTime
+        ? new Date(data.observationTime)
+        : null;
+
+      const validTime =
+        observed && Number.isFinite(observed.getTime());
+
+      const formattedTime = validTime
+        ? new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Los_Angeles",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            timeZoneName: "short"
+          }).format(observed)
+        : null;
+
+      if (
+        data.available &&
+        data.waterTempF != null &&
+        Number.isFinite(Number(data.waterTempF))
+      ) {
+        value.textContent =
+          Number(data.waterTempF).toFixed(1) + "°F";
+
+        detail.textContent =
+          "Observed " + formattedTime;
+      } else if (data.status === "stale" && validTime) {
+        value.textContent = "--";
+        detail.textContent =
+          "Data delayed · Last observed " + formattedTime;
+      } else {
+        value.textContent = "--";
+        detail.textContent = "Temperature data unavailable";
+      }
+
+    } catch (error) {
+      console.error("Water temperature error:", error);
+      value.textContent = "--";
+      detail.textContent = "Temperature data unavailable";
+    }
+  }
+
+  loadWaterTemperature();
+  setInterval(loadWaterTemperature, 15 * 60 * 1000);
+
   loadTides();
 
   // Refresh every 15 minutes.
