@@ -156,7 +156,7 @@ footer p{margin:6px 0}
 </section>
 <section aria-label="Safety information"><div class="notice"><strong>Important:</strong> This dashboard is informational and is not for navigation or on-water safety decisions. NOAA currents are model forecasts; wind is observed, while water temperature may be a buoy observation or a clearly labeled NOAA model estimate. Check official weather and marine warnings, local conditions, and your own capabilities before paddling.</div></section>
 </main>
-<footer class="container">Bellingham Bay Conditions · Times shown in Pacific Time where noted · <span id="local-date"></span><p>NOAA CO-OPS / NDBC / SSCOFS and UW NWEM data sources are attributed in their respective sections.</p></footer>
+<footer class="container">Bellingham Bay Conditions · Times shown in Pacific Time where noted · <span id="local-date"></span><p>NOAA CO-OPS / NDBC / SSCOFS and UW NWEM data sources are attributed in their respective sections.</p><p><a href="/sources.html">Data Sources &amp; Methodology</a></p></footer>
 <script>
 const pacificTime = date => new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(date);
 const setText=(id,text)=>{document.getElementById(id).textContent=text};
