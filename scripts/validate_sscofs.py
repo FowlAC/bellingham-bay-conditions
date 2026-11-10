@@ -33,8 +33,8 @@ def validate(candidate, now):
     vectors = candidate['vectors']
     if not (1000 <= len(nodes) <= 100000 and 1000 <= len(triangles) <= 300000):
         raise ValueError('Unexpected water mesh dimensions')
-    if not (len(times) == len(vectors) == 3):
-        raise ValueError('Require exactly three forecast snapshots')
+    if not (len(times) == len(vectors) == 9):
+        raise ValueError('Require exactly nine forecast snapshots for the 24-hour timeline')
     if meta.get('nodes') != len(nodes) or meta.get('cells') != len(triangles):
         raise ValueError('Mesh metadata does not match actual dimensions')
     if not all(isinstance(pt, list) and len(pt) == 2 and
