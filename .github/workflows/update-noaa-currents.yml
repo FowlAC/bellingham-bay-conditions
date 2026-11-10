@@ -2,8 +2,6 @@ name: Update NOAA Bellingham Currents
 
 on:
   schedule:
-    # 6-hour cadence, offset from the top of the hour to reduce GitHub scheduling delays.
-    # Nine forecast files per run; monitor bandwidth/runtime and adjust if needed.
     - cron: '17 2,8,14,20 * * *'
   workflow_dispatch:
 
@@ -30,28 +28,45 @@ jobs:
           python-version: '3.11'
       - name: Install NOAA data libraries
         run: python -m pip install --disable-pip-version-check numpy requests netCDF4
-      - name: Download NOAA forecasts into a candidate file
-        run: python scripts/update_sscofs.py --hours '3,6,9,12,15,18,21,24,27' --output currents-candidate.json
-      - name: Validate and compare against published forecast
+      - name: Download NOAA forecasts, extract currents and surface temperature
+        run: |
+          python scripts/update_noaa_with_temperature.py \
+            --hours '3,6,9,12,15,18,21,24,27' \
+            --output currents-candidate.json \
+            --temp-output water-temp-candidate.json
+      - name: Validate currents against published forecast
         id: compare
         run: |
           python scripts/validate_sscofs.py \
             --candidate currents-candidate.json \
             --existing currents-live-data.json \
             --github-output "$GITHUB_OUTPUT"
-      - name: Publish only new validated data
-        if: steps.compare.outputs.publish == 'true'
+      - name: Validate temperature separately
+        id: temperature
         run: |
-          mv currents-candidate.json currents-live-data.json
+          python scripts/validate_temperature.py \
+            --candidate water-temp-candidate.json \
+            --existing water-temp-model.json \
+            --github-output "$GITHUB_OUTPUT"
+      - name: Publish validated updates only
+        if: steps.compare.outputs.publish == 'true' || steps.temperature.outputs.publish == 'true'
+        run: |
+          if [ '${{ steps.compare.outputs.publish }}' = 'true' ]; then
+            mv currents-candidate.json currents-live-data.json
+          fi
+          if [ '${{ steps.temperature.outputs.publish }}' = 'true' ]; then
+            mv water-temp-candidate.json water-temp-model.json
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add currents-live-data.json
+          if [ -f currents-live-data.json ]; then git add currents-live-data.json; fi
+          if [ -f water-temp-model.json ]; then git add water-temp-model.json; fi
           if git diff --cached --quiet; then
             echo 'Content unchanged; no commit.'
           else
-            git commit -m 'Update NOAA Bellingham current forecasts'
+            git commit -m 'Update NOAA Bellingham current and temperature forecasts'
             git push origin HEAD:main
           fi
       - name: Report no change
-        if: steps.compare.outputs.publish != 'true'
-        run: echo 'No newer NOAA current data. Existing map JSON preserved.'
+        if: steps.compare.outputs.publish != 'true' && steps.temperature.outputs.publish != 'true'
+        run: echo 'No newer NOAA forecast data; existing files preserved.'
