@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102d40">
+<title>Bellingham Bay in Motion — V2 NOAA Currents</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#142f44;background:#eff4f7}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:auto;padding:18px}h1{font-size:clamp(1.5rem,3.5vw,2.1rem);margin:0 0 5px}.lede{margin:0 0 16px;color:#536b7a;font-size:14px}.warning{padding:12px 14px;border-left:4px solid #c28b36;background:#fff8e9;margin:0 0 14px;font-size:13px;line-height:1.5}.panel{background:#fff;border:1px solid #d7e3e9;border-radius:13px;overflow:hidden;box-shadow:0 6px 20px rgba(20,55,75,.06)}#map{height:min(66vh,650px);min-height:350px;position:relative;background:#b8d9e6}.overlay{position:absolute;inset:0;pointer-events:none;z-index:450}.map-hint{position:absolute;top:13px;right:13px;z-index:490;background:rgba(255,255,255,.94);border:1px solid #d8e5ea;border-radius:8px;color:#345569;padding:7px 10px;font-size:12px;pointer-events:none;max-width:190px}.toolbar{padding:14px 18px 8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}.toolbar button{border:1px solid #a6c3d2;border-radius:8px;padding:9px 13px;background:white;color:#173a51;font:inherit;font-size:14px;font-weight:600;cursor:pointer}.toolbar button:hover{background:#e8f4f8}.toolbar button:focus-visible,.toolbar input:focus-visible{outline:3px solid #e2a540;outline-offset:2px}.toolbar input{flex:1;min-width:110px;accent-color:#16799f}.time{min-width:185px;font-weight:700;font-size:13px;text-align:right;font-variant-numeric:tabular-nums}.time-label{font-size:11px;color:#73828d;font-weight:500}.legend-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:7px 18px 14px;border-top:1px solid #edf1f3}.legend-title{font-weight:650;font-size:12px;white-space:nowrap}.legend-container{flex:1;min-width:230px;max-width:480px}.gradient{height:13px;border-radius:5px;background:linear-gradient(to right,#b4e1e9 0%,#64c8d5 20%,#3488b9 40%,#3657a1 60%,#7f4598 80%,#bc345e 100%)}.ticks{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#617581;margin-top:3px}.toggle{display:flex;gap:7px;align-items:center;font-size:12px;color:#425d6f;cursor:pointer;white-space:nowrap}.toggle input{accent-color:#16799f}.info{padding:0 18px 15px;color:#617581;font-size:12px;line-height:1.55}.info strong{color:#294458}.stats{display:flex;flex-wrap:wrap;gap:10px;margin:3px 0 13px}.stat{background:#edf6fa;border-radius:8px;padding:8px 11px;font-size:12px}.stat strong{font-weight:750}.error{padding:24px;color:#8a2732;background:#fff3f1}.leaflet-control-attribution{font-size:10px!important}@media(max-width:650px){.wrap{padding:10px}#map{height:52vh;min-height:330px}.time{min-width:100%;text-align:left}.toolbar{gap:8px;padding:11px}.legend-row{padding:10px 12px}.map-hint{font-size:10px;max-width:135px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<h1>Bellingham Bay in Motion <span style="font-weight:400;color:#6b8694;font-size:.58em">V2</span></h1>
+<p class="lede">Smooth current-speed heatmap and animated surface flow based on NOAA's native Salish Sea model mesh.</p>
+<div class="warning"><strong>Historical model sample — not live conditions.</strong> Showing November 7–8, 2026 (Pacific Time), from a NOAA model nowcast. Colors and particles are modeled currents, not direct measurements. Not for navigation or safety decisions.</div>
+<div class="stats"><div class="stat"><strong>Source</strong> NOAA SSCOFS</div><div class="stat"><strong>Coverage</strong> 4,035 model water cells</div><div class="stat"><strong>Timeline</strong> 25 hourly snapshots</div><div class="stat"><strong>Unit</strong> knots</div></div>
+<div class="panel">
+<div id="map" aria-label="Map of Bellingham Bay with NOAA modeled water currents"><div class="map-hint">Pan and zoom to explore.<br>Tap the timeline to change hours.</div></div>
+<div class="toolbar">
+<button id="play" type="button" aria-label="Play model timeline">▶ Play</button>
+<button id="restart" type="button" aria-label="Return to start">↺ Start</button>
+<input id="hour" type="range" min="0" max="24" value="0" step="1" aria-label="Model snapshot hour">
+<div class="time"><div id="timestamp">Loading…</div><div class="time-label" id="time-index">Historical nowcast</div></div>
+</div>
+<div class="legend-row"><span class="legend-title">Surface current speed</span><div class="legend-container"><div class="gradient"></div><div class="ticks"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0</span><span>2.5+ kn</span></div></div><label class="toggle"><input type="checkbox" id="particles" checked> Flow particles</label><label class="toggle"><input type="checkbox" id="heatmap" checked> Heatmap</label></div>
+<div class="info"><strong>How to read:</strong> Cooler colors indicate slower currents; magenta indicates faster currents. Animated trails follow the modeled flow direction, accelerated for visibility. Colors are interpolated across NOAA's actual water-only triangular mesh, rather than estimated across land. Nearshore predictions may be inaccurate. <strong>Source:</strong> NOAA SSCOFS FVCOM, user-provided subset (Nov 8–9 UTC). Base map © OpenStreetMap contributors.</div>
+</div>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(async function(){
+'use strict';
+const mapElement=document.getElementById('map'),slider=document.getElementById('hour'),playButton=document.getElementById('play'),timeLabel=document.getElementById('timestamp'),timeIndex=document.getElementById('time-index'),showParticles=document.getElementById('particles'),showHeatmap=document.getElementById('heatmap');
+function fail(message){mapElement.innerHTML='<div class="error"></div>';mapElement.querySelector('.error').textContent=message;}
+if(typeof L==='undefined'){fail('Could not load the Leaflet map library. Check internet access.');return;}
+let raw;
+try{const response=await fetch('./currents-v2-data.json');if(!response.ok)throw new Error('HTTP '+response.status);raw=await response.json();if(!raw.nodes?.length||!raw.triangles?.length||!raw.vectors?.length)throw Error('incomplete mesh data');}
+catch(e){fail('Could not load currents-v2-data.json. Upload BOTH V2 files to the same GitHub folder. '+e.message);return;}
+const map=L.map(mapElement,{zoomControl:true,preferCanvas:true,scrollWheelZoom:false}).setView([48.735,-122.57],12);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+const nodes=raw.nodes,triangles=raw.triangles,original=raw.vectors;let frame=0,playing=false,heatgl=null,heatProgram=null,heatCanvas,flowCanvas,flowContext,flowParticles=[],lastDraw=0,lastFrameAdvance=0,vertices=null,positions=null,meshIndex=null,webGLActive=false;
+const minlat=Math.min(...nodes.map(n=>n[0])),maxlat=Math.max(...nodes.map(n=>n[0]));const minlon=Math.min(...nodes.map(n=>n[1])),maxlon=Math.max(...nodes.map(n=>n[1]));
+const COLS=34,ROWS=25,spatial=Array.from({length:COLS*ROWS},()=>[]),cellX=(x)=>Math.max(0,Math.min(COLS-1,Math.floor((x-minlon)/(maxlon-minlon)*COLS))),cellY=(y)=>Math.max(0,Math.min(ROWS-1,Math.floor((y-minlat)/(maxlat-minlat)*ROWS)));
+for(let i=0;i<triangles.length;i++){
+  const t=triangles[i],a=nodes[t[0]],b=nodes[t[1]],c=nodes[t[2]];
+  const xs=[a[1],b[1],c[1]],ys=[a[0],b[0],c[0]];
+  for(let gy=cellY(Math.min(...ys));gy<=cellY(Math.max(...ys));gy++)for(let gx=cellX(Math.min(...xs));gx<=cellX(Math.max(...xs));gx++)spatial[gy*COLS+gx].push(i);
+}
+function interpolate(lat,lon){
+ if(lon<minlon||lon>maxlon||lat<minlat||lat>maxlat)return null;
+ const ids=spatial[cellY(lat)*COLS+cellX(lon)];
+ for(const i of ids){const t=triangles[i],a=nodes[t[0]],b=nodes[t[1]],c=nodes[t[2]];
+ const ax=a[1],ay=a[0],bx=b[1],by=b[0],cx=c[1],cy=c[0];
+ const denom=(by-cy)*(ax-cx)+(cx-bx)*(ay-cy);if(Math.abs(denom)<1e-13)continue;
+ const w0=((by-cy)*(lon-cx)+(cx-bx)*(lat-cy))/denom;
+ const w1=((cy-ay)*(lon-cx)+(ax-cx)*(lat-cy))/denom;
+ const w2=1-w0-w1;
+ if(w0>=-0.00001&&w1>=-0.00001&&w2>=-0.00001){
+ const v=original[frame];return {u:(w0*v[t[0]][0]+w1*v[t[1]][0]+w2*v[t[2]][0])/1000,v:(w0*v[t[0]][1]+w1*v[t[1]][1]+w2*v[t[2]][1])/1000};
+ }
+ }
+ return null;
+}
+const vs=`attribute vec2 a_pos;attribute vec2 a_vel;varying vec2 v_vel;void main(){gl_Position=vec4(a_pos,0.0,1.0);v_vel=a_vel;}`;
+const fs=`precision mediump float;varying vec2 v_vel;vec3 ramp(float t){vec3 c0=vec3(.706,.882,.914),c1=vec3(.392,.784,.835),c2=vec3(.204,.533,.725),c3=vec3(.212,.341,.631),c4=vec3(.498,.271,.596),c5=vec3(.737,.204,.369);float z=clamp(t,0.,1.)*5.;if(z<1.)return mix(c0,c1,z);if(z<2.)return mix(c1,c2,z-1.);if(z<3.)return mix(c2,c3,z-2.);if(z<4.)return mix(c3,c4,z-3.);return mix(c4,c5,z-4.);}void main(){float knots=length(v_vel)*1.943844;vec3 c=ramp(knots/2.5);gl_FragColor=vec4(c,.78);}`;
+function compile(gl,type,source){let s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
+function initGL(){
+ heatCanvas=document.createElement('canvas');heatCanvas.className='overlay';mapElement.appendChild(heatCanvas);
+ flowCanvas=document.createElement('canvas');flowCanvas.className='overlay';flowCanvas.style.zIndex='455';mapElement.appendChild(flowCanvas);flowContext=flowCanvas.getContext('2d');
+ heatgl=heatCanvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});if(!heatgl){return;}
+ try{const vertex=compile(heatgl,heatgl.VERTEX_SHADER,vs),fragment=compile(heatgl,heatgl.FRAGMENT_SHADER,fs);heatProgram=heatgl.createProgram();heatgl.attachShader(heatProgram,vertex);heatgl.attachShader(heatProgram,fragment);heatgl.linkProgram(heatProgram);if(!heatgl.getProgramParameter(heatProgram,heatgl.LINK_STATUS))throw Error('GL link failed');heatgl.useProgram(heatProgram);
+ const bPos=heatgl.createBuffer(),bVel=heatgl.createBuffer(),bIndex=heatgl.createBuffer();heatProgram.bPos=bPos;heatProgram.bVel=bVel;heatProgram.bIndex=bIndex;
+ heatgl.bindBuffer(heatgl.ELEMENT_ARRAY_BUFFER,bIndex);meshIndex=new Uint16Array(triangles.flat());heatgl.bufferData(heatgl.ELEMENT_ARRAY_BUFFER,meshIndex,heatgl.STATIC_DRAW);
+ const posLoc=heatgl.getAttribLocation(heatProgram,'a_pos'),velLoc=heatgl.getAttribLocation(heatProgram,'a_vel');heatgl.bindBuffer(heatgl.ARRAY_BUFFER,bPos);heatgl.enableVertexAttribArray(posLoc);heatgl.vertexAttribPointer(posLoc,2,heatgl.FLOAT,false,0,0);heatgl.bindBuffer(heatgl.ARRAY_BUFFER,bVel);heatgl.enableVertexAttribArray(velLoc);heatgl.vertexAttribPointer(velLoc,2,heatgl.FLOAT,false,0,0);
+ heatgl.enable(heatgl.BLEND);heatgl.blendFunc(heatgl.SRC_ALPHA,heatgl.ONE_MINUS_SRC_ALPHA);webGLActive=true;
+ }catch(e){console.warn('WebGL initialization failed',e);webGLActive=false;}
+}
+function reseed(p){for(let k=0;k<25;k++){const tri=triangles[Math.floor(Math.random()*triangles.length)],a=nodes[tri[0]],b=nodes[tri[1]],c=nodes[tri[2]],r=Math.sqrt(Math.random()),s=Math.random(),w0=1-r,w1=r*(1-s),w2=r*s,lat=a[0]*w0+b[0]*w1+c[0]*w2,lon=a[1]*w0+b[1]*w1+c[1]*w2;if(interpolate(lat,lon)){p.lat=lat;p.lon=lon;p.age=Math.random()*90;p.history=[];return;}}p.age=999;}
+function refreshParticles(){flowParticles=Array.from({length:260},()=>{let p={};reseed(p);return p;});}
+function reposition(){
+ const width=mapElement.clientWidth,height=mapElement.clientHeight,dpr=Math.min(window.devicePixelRatio||1,2);
+ for(const c of [heatCanvas,flowCanvas]){c.width=Math.round(width*dpr);c.height=Math.round(height*dpr);c.style.width=width+'px';c.style.height=height+'px';}
+ flowContext.setTransform(dpr,0,0,dpr,0,0);
+ if(webGLActive){heatgl.viewport(0,0,heatCanvas.width,heatCanvas.height);positions=new Float32Array(nodes.length*2);for(let i=0;i<nodes.length;i++){let pt=map.latLngToContainerPoint(nodes[i]);positions[i*2]=(pt.x/width)*2-1;positions[i*2+1]=1-(pt.y/height)*2;}
+ heatgl.bindBuffer(heatgl.ARRAY_BUFFER,heatProgram.bPos);heatgl.bufferData(heatgl.ARRAY_BUFFER,positions,heatgl.DYNAMIC_DRAW);
+ }
+ redrawHeat();refreshParticles();
+}
+function drawCanvasFallback(){
+ const ctx=heatCanvas.getContext('2d');if(!ctx)return;
+ const w=mapElement.clientWidth,h=mapElement.clientHeight,dpr=Math.min(window.devicePixelRatio||1,2);
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);if(!showHeatmap.checked)return;
+ const colors=['#b4e1e9','#64c8d5','#3488b9','#3657a1','#7f4598','#bc345e'];
+ const vals=original[frame];ctx.globalAlpha=.78;
+ for(let k=0;k<triangles.length;k++){
+ const tri=triangles[k],a=nodes[tri[0]],b=nodes[tri[1]],c=nodes[tri[2]];
+ const u=(vals[tri[0]][0]+vals[tri[1]][0]+vals[tri[2]][0])/3000;
+ const v=(vals[tri[0]][1]+vals[tri[1]][1]+vals[tri[2]][1])/3000;
+ const idx=Math.min(5,Math.floor(Math.hypot(u,v)*1.943844/2.5*6));
+ const A=map.latLngToContainerPoint(a),B=map.latLngToContainerPoint(b),C=map.latLngToContainerPoint(c);
+ ctx.fillStyle=colors[idx];ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(C.x,C.y);ctx.closePath();ctx.fill();
+ }ctx.globalAlpha=1;
+}
+function redrawHeat(){
+ if(!webGLActive){drawCanvasFallback();return;}
+ heatgl.clearColor(0,0,0,0);heatgl.clear(heatgl.COLOR_BUFFER_BIT);
+ if(!showHeatmap.checked)return;
+ const vec=original[frame],vel=new Float32Array(vec.length*2);for(let i=0;i<vec.length;i++){vel[i*2]=vec[i][0]/1000;vel[i*2+1]=vec[i][1]/1000;}
+ heatgl.useProgram(heatProgram);heatgl.bindBuffer(heatgl.ARRAY_BUFFER,heatProgram.bVel);heatgl.bufferData(heatgl.ARRAY_BUFFER,vel,heatgl.DYNAMIC_DRAW);
+ // Restore attribute bindings when switching buffers (WebGL attributes remember their buffer).
+ let loc=heatgl.getAttribLocation(heatProgram,'a_vel');heatgl.vertexAttribPointer(loc,2,heatgl.FLOAT,false,0,0);
+ heatgl.bindBuffer(heatgl.ARRAY_BUFFER,heatProgram.bPos);loc=heatgl.getAttribLocation(heatProgram,'a_pos');heatgl.vertexAttribPointer(loc,2,heatgl.FLOAT,false,0,0);
+ heatgl.bindBuffer(heatgl.ELEMENT_ARRAY_BUFFER,heatProgram.bIndex);heatgl.drawElements(heatgl.TRIANGLES,meshIndex.length,heatgl.UNSIGNED_SHORT,0);
+}
+function setFrame(n){frame=n;slider.value=String(frame);timeLabel.textContent=new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(new Date(raw.times[frame]));timeIndex.textContent='Historical nowcast · Hour '+(frame+1)+' of '+raw.times.length;redrawHeat();refreshParticles();}
+function renderFlow(timestamp){
+ const dtime=lastDraw?Math.min((timestamp-lastDraw)/1000,.06):0;lastDraw=timestamp;
+ const w=mapElement.clientWidth,h=mapElement.clientHeight;flowContext.clearRect(0,0,w,h);
+ if(showParticles.checked){for(const p of flowParticles){if(p.age>130){reseed(p);continue;}
+ const velocity=interpolate(p.lat,p.lon);if(!velocity){reseed(p);continue;}
+ // Time acceleration is visual only; each step still samples the underlying model vector field.
+ const simSeconds=dtime*1100;const nextLat=p.lat+velocity.v*simSeconds/111200;const nextLon=p.lon+velocity.u*simSeconds/(111200*Math.cos(p.lat*Math.PI/180));
+ if(!interpolate(nextLat,nextLon)){reseed(p);continue;}
+ p.lat=nextLat;p.lon=nextLon;p.age+=dtime*17;
+ const px=map.latLngToContainerPoint([p.lat,p.lon]);p.history.push([px.x,px.y]);if(p.history.length>9)p.history.shift();
+ if(px.x< -30||px.x>w+30||px.y< -30||px.y>h+30){reseed(p);continue;}
+ if(p.history.length>1){flowContext.beginPath();flowContext.moveTo(...p.history[0]);for(let j=1;j<p.history.length;j++)flowContext.lineTo(...p.history[j]);flowContext.strokeStyle='rgba(5,40,68,.72)';flowContext.lineWidth=1.7;flowContext.lineCap='round';flowContext.stroke();flowContext.fillStyle='rgba(245,254,255,.9)';flowContext.beginPath();flowContext.arc(px.x,px.y,1.35,0,2*Math.PI);flowContext.fill();}
+ }}
+ if(playing&&timestamp-lastFrameAdvance>1400){lastFrameAdvance=timestamp;setFrame((frame+1)%raw.times.length);}
+ requestAnimationFrame(renderFlow);
+}
+slider.max=String(raw.times.length-1);slider.addEventListener('input',()=>{setFrame(Number(slider.value));lastFrameAdvance=performance.now();});
+playButton.addEventListener('click',()=>{playing=!playing;playButton.textContent=playing?'❚❚ Pause':'▶ Play';playButton.setAttribute('aria-label',playing?'Pause model timeline':'Play model timeline');lastFrameAdvance=performance.now();});
+document.getElementById('restart').addEventListener('click',()=>{setFrame(0);lastFrameAdvance=performance.now();});
+showHeatmap.addEventListener('change',redrawHeat);showParticles.addEventListener('change',()=>{refreshParticles();});
+map.on('moveend zoomend resize',reposition);
+initGL();reposition();setFrame(0);requestAnimationFrame(renderFlow);
+if(!webGLActive)document.querySelector('.warning').textContent+=' WebGL unavailable: using a coarser 2D water-mesh heatmap instead.';
+})();
+</script>
+</body>
+</html>
