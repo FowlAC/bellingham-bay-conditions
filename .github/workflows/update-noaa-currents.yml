@@ -3,6 +3,7 @@ name: Update NOAA Bellingham Currents
 on:
   schedule:
     # 6-hour cadence, offset from the top of the hour to reduce GitHub scheduling delays.
+    # Nine forecast files per run; monitor bandwidth/runtime and adjust if needed.
     - cron: '17 2,8,14,20 * * *'
   workflow_dispatch:
 
@@ -16,7 +17,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Check out main
         uses: actions/checkout@v4
@@ -30,7 +31,7 @@ jobs:
       - name: Install NOAA data libraries
         run: python -m pip install --disable-pip-version-check numpy requests netCDF4
       - name: Download NOAA forecasts into a candidate file
-        run: python scripts/update_sscofs.py --hours '3,6,9' --output currents-candidate.json
+        run: python scripts/update_sscofs.py --hours '3,6,9,12,15,18,21,24,27' --output currents-candidate.json
       - name: Validate and compare against published forecast
         id: compare
         run: |
@@ -54,4 +55,3 @@ jobs:
       - name: Report no change
         if: steps.compare.outputs.publish != 'true'
         run: echo 'No newer NOAA current data. Existing map JSON preserved.'
-
