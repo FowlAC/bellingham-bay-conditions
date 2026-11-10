@@ -1,0 +1,29 @@
+name: Test NOAA Bellingham Water Temperature
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  temperature-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install NOAA data libraries
+        run: python -m pip install --disable-pip-version-check numpy requests netCDF4
+      - name: Inspect one NOAA SSCOFS surface temperature forecast
+        run: python scripts/test_sscofs_temperature.py --output water-temp-pilot.json
+      - name: Upload pilot report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bellingham-water-temp-pilot
+          path: water-temp-pilot.json
+          if-no-files-found: error
