@@ -1,1 +1,57 @@
+name: Update NOAA Bellingham Currents
+
+on:
+  schedule:
+    # 6-hour cadence, offset from the top of the hour to reduce GitHub scheduling delays.
+    - cron: '17 2,8,14,20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bellingham-noaa-publish
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install NOAA data libraries
+        run: python -m pip install --disable-pip-version-check numpy requests netCDF4
+      - name: Download NOAA forecasts into a candidate file
+        run: python scripts/update_sscofs.py --hours '3,6,9' --output currents-candidate.json
+      - name: Validate and compare against published forecast
+        id: compare
+        run: |
+          python scripts/validate_sscofs.py \
+            --candidate currents-candidate.json \
+            --existing currents-live-data.json \
+            --github-output "$GITHUB_OUTPUT"
+      - name: Publish only new validated data
+        if: steps.compare.outputs.publish == 'true'
+        run: |
+          mv currents-candidate.json currents-live-data.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add currents-live-data.json
+          if git diff --cached --quiet; then
+            echo 'Content unchanged; no commit.'
+          else
+            git commit -m 'Update NOAA Bellingham current forecasts'
+            git push origin HEAD:main
+          fi
+      - name: Report no change
+        if: steps.compare.outputs.publish != 'true'
+        run: echo 'No newer NOAA current data. Existing map JSON preserved.'
 
