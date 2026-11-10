@@ -1,633 +1,110 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#102d40">
-  <meta name="description" content="Bellingham Bay paddling conditions, including wind, tides, water temperature, currents, forecasts, and webcams.">
-  <title>Bellingham Bay Conditions</title>
-  <style>
-    :root {
-      --navy: #102d40;
-      --blue: #17648c;
-      --pale: #eaf3f7;
-      --bg: #f3f6f8;
-      --text: #233746;
-      --muted: #627583;
-      --border: #dbe4e9;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    header {
-      background: var(--navy);
-      color: white;
-      padding: 28px 20px;
-    }
-
-    .header-inner, main, footer {
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    h1 {
-      font-size: clamp(1.65rem, 4vw, 2.4rem);
-      margin: 0 0 5px;
-      letter-spacing: -.03em;
-    }
-
-    header p {
-      margin: 0;
-      color: #c7dce7;
-    }
-
-    main { padding: 24px 16px 40px; }
-
-    h2 {
-      font-size: 1.25rem;
-      margin: 0 0 16px;
-    }
-
-    .section { margin-bottom: 30px; }
-
-    .section-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    .section-heading h2 { margin: 0; }
-
-    .small {
-      font-size: .82rem;
-      color: var(--muted);
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .card, .panel {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 19px;
-      box-shadow: 0 2px 9px rgba(18,45,65,.035);
-    }
-
-    .card-label {
-      font-size: .87rem;
-      color: var(--muted);
-      margin-bottom: 9px;
-    }
-
-    .value {
-      font-size: 1.9rem;
-      font-weight: 700;
-      letter-spacing: -.04em;
-      color: var(--navy);
-    }
-
-    .detail {
-      font-size: .79rem;
-      color: var(--muted);
-      margin-top: 5px;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 4px 9px;
-      border-radius: 20px;
-      background: var(--pale);
-      color: var(--blue);
-      font-size: .76rem;
-      font-weight: 600;
-    }
-
-    .map {
-      min-height: 330px;
-      border-radius: 9px;
-      border: 1px dashed #b4cbd7;
-      background: linear-gradient(145deg, #d7eaf3, #a8d1e4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      text-align: center;
-    }
-
-    .map-message {
-      max-width: 350px;
-      color: #214961;
-    }
-
-    .map-message strong {
-      font-size: 1.25rem;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      border: 1px solid var(--border);
-      background: #f5f8fa;
-      padding: 9px 17px;
-      border-radius: 7px;
-      font: inherit;
-      font-size: .9rem;
-      cursor: pointer;
-      color: var(--text);
-    }
-
-    button.active {
-      background: var(--navy);
-      color: white;
-      border-color: var(--navy);
-    }
-
-    button:focus-visible, a:focus-visible {
-      outline: 3px solid #e4a642;
-      outline-offset: 3px;
-    }
-
-    .resource-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    a {
-      color: var(--blue);
-      text-decoration-thickness: 1px;
-      text-underline-offset: 3px;
-    }
-
-    .resource {
-      display: block;
-      padding: 15px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      text-decoration: none;
-    }
-
-    .resource:hover { background: var(--pale); }
-
-    .resource strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .resource span {
-      font-size: .8rem;
-      color: var(--muted);
-    }
-
-    .notice {
-      border-left: 4px solid #d4a04c;
-      background: #fffaf0;
-      padding: 15px 18px;
-      border-radius: 5px;
-      font-size: .88rem;
-    }
-
-    footer {
-      padding: 10px 16px 32px;
-      font-size: .79rem;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    @media(max-width: 750px) {
-      .cards { grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .resource-grid { grid-template-columns: 1fr; }
-      .card { padding: 14px; }
-      .value { font-size: 1.65rem; }
-      .map { min-height: 270px; }
-    }
-
-    @media(max-width: 350px) {
-      .cards { grid-template-columns: 1fr; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102d40">
+<meta name="description" content="Bellingham Bay paddling conditions: local wind observations, NOAA tide predictions, water temperature, and an animated 24-hour surface-current forecast.">
+<title>Bellingham Bay Conditions | Wind, Tides & Surface Currents</title>
+<style>
+:root{--navy:#102d40;--navy2:#183d53;--blue:#17648c;--bg:#f2f6f8;--text:#233746;--muted:#5c7080;--border:#d9e4ea;--pale:#e7f2f7}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:var(--bg)}
+a{color:var(--blue);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:3px solid #e4a642;outline-offset:3px}
+header{background:linear-gradient(125deg,#102d40,#174762);color:white;padding:30px 20px 32px}
+.container{max-width:1240px;margin-inline:auto}
+header h1{font-size:clamp(1.75rem,3.3vw,2.55rem);letter-spacing:-.035em;margin:0 0 4px;line-height:1.17}
+header p{margin:0;color:#c9dce6;font-size:clamp(.9rem,1.6vw,1.02rem)}
+.top-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.top-links a{color:#e9f5fc;text-decoration:none;font-size:.84rem;padding:6px 11px;border:1px solid #5d8295;border-radius:999px}
+.top-links a:hover{background:#295569}
+main{padding:26px 16px 35px}
+section{margin-bottom:30px}
+.section-head{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 13px}
+h2{font-size:1.32rem;letter-spacing:-.015em;margin:0}
+.small{font-size:.83rem;color:var(--muted)}
+.status{display:inline-block;font-size:.78rem;font-weight:650;border-radius:20px;padding:5px 11px;background:var(--pale);color:var(--blue)}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.card,.panel{border:1px solid var(--border);border-radius:13px;background:#fff;box-shadow:0 3px 12px rgba(18,45,65,.035)}
+.card{min-height:174px;padding:20px 19px}
+.card-label{font-size:.92rem;color:var(--muted);margin-bottom:11px}
+.value{font-size:clamp(1.65rem,2.4vw,2.15rem);font-weight:750;letter-spacing:-.038em;color:var(--navy);white-space:nowrap}
+.detail{font-size:.79rem;color:var(--muted);margin-top:7px;overflow-wrap:anywhere}
+.panel{padding:20px}
+.map-panel{padding:0;overflow:hidden}
+.map-intro{padding:16px 20px 14px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.map-intro p{font-size:.9rem;color:var(--muted);margin:3px 0 0;max-width:840px}
+.open-map{display:inline-flex;align-items:center;text-decoration:none;font-size:.86rem;font-weight:700;white-space:nowrap;border:1px solid var(--border);border-radius:9px;padding:9px 13px}
+.open-map:hover{background:var(--pale)}
+.frame-shell{background:#08131b;position:relative}
+#currents-map{width:100%;height:1050px;border:0;display:block;background:#08131b}
+.map-foot{padding:12px 20px 16px;font-size:.82rem;color:var(--muted)}
+.resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.resource{text-decoration:none;display:block;padding:15px;border:1px solid var(--border);border-radius:9px}
+.resource:hover{background:var(--pale)}
+.resource strong{display:block;font-size:.91rem;margin-bottom:2px}
+.resource span{font-size:.8rem;color:var(--muted)}
+.notice{border-left:4px solid #c99035;background:#fff9ec;padding:14px 17px;font-size:.86rem;border-radius:5px}
+footer{padding:6px 16px 28px;color:var(--muted);text-align:center;font-size:.78rem}
+footer p{margin:6px 0}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){main{padding:19px 12px 22px}header{padding:26px 14px}.cards{gap:9px}.card{min-height:170px;padding:14px 13px}.card-label{margin-bottom:8px}.value{font-size:1.55rem}.detail{font-size:.75rem}.panel{padding:15px}.map-panel{padding:0}.map-intro{padding:15px}.map-foot{padding:12px 15px}.resource-grid{grid-template-columns:1fr}#currents-map{height:1030px}.section-head{align-items:flex-start}section{margin-bottom:24px}}
+@media(max-width:365px){.cards{grid-template-columns:1fr}.card{min-height:145px}}
+</style>
 </head>
 <body>
-
-<header>
-  <div class="header-inner">
-    <h1>Bellingham Bay Conditions</h1>
-    <p>Wind, tides, currents, and local conditions for paddlers</p>
-  </div>
-</header>
-
-<main>
-
- 
-<section class="section">
-  <div class="section-heading">
-    <h2>Current Conditions</h2>
-    <span class="status">Data integration pending</span>
-  </div>
-
-  <div class="cards">
-
-    <!-- Wind Speed -->
-    <div class="card">
-      <div class="card-label">Wind Speed</div>
-      <div class="value" id="wind">--</div>
-      <div class="detail" id="wind-detail">
-        Loading buoy observations...
-      </div>
-      <div class="detail">
-        NOAA NDBC · Se'lhaem buoy
-      </div>
-    </div>
-
-    <!-- Wind Gusts -->
-    <div class="card">
-      <div class="card-label">Wind Gusts</div>
-      <div class="value" id="gust">--</div>
-      <div class="detail" id="gust-detail">
-        Loading buoy observations...
-      </div>
-      <div class="detail">
-        NOAA NDBC · Se'lhaem buoy
-      </div>
-    </div>
-
-    <!-- Water Temperature -->
-    <div class="card">
-      <div class="card-label">Water Temperature</div>
-      <div class="value" id="water-temp">--</div>
-      <div class="detail" id="water-temp-detail">
-        °F · Awaiting data
-      </div>
-    </div>
-
-    <!-- Next Tide -->
-    <div class="card">
-      <div class="card-label">Next Tide (Predicted)</div>
-      <div class="value" id="tide">--</div>
-      <div class="detail" id="tide-detail">
-        Loading NOAA predictions...
-      </div>
-      <div class="detail">
-        NOAA Bellingham · MLLW
-      </div>
-    </div>
-
-  </div><!-- End cards -->
-
+<header><div class="container">
+  <h1>Bellingham Bay Conditions</h1>
+  <p>Wind, tides, water temperature &amp; modeled currents for paddlers</p>
+  <nav class="top-links" aria-label="Page sections">
+    <a href="#conditions">Current conditions</a><a href="#currents">24-hour current forecast</a><a href="#resources">Local resources</a>
+  </nav>
+</div></header>
+<main class="container">
+<section id="conditions" aria-labelledby="conditions-heading">
+ <div class="section-head"><h2 id="conditions-heading">Current Conditions</h2><span class="status">Observations &amp; predictions · refreshed periodically</span></div>
+ <div class="cards">
+  <article class="card"><div class="card-label">Wind Speed</div><div class="value" id="wind">--</div><div class="detail" id="wind-detail">Loading buoy observations...</div><div class="detail">NOAA NDBC · Se'lhaem buoy</div></article>
+  <article class="card"><div class="card-label">Wind Gusts</div><div class="value" id="gust">--</div><div class="detail" id="gust-detail">Loading buoy observations...</div><div class="detail">NOAA NDBC · Se'lhaem buoy</div></article>
+  <article class="card"><div class="card-label">Water Temperature</div><div class="value" id="water-temp">--</div><div class="detail" id="water-temp-detail">Checking observation availability...</div><div class="detail">UW NWEM · reported when recent</div></article>
+  <article class="card"><div class="card-label">Next Tide (Predicted)</div><div class="value" id="tide">--</div><div class="detail" id="tide-detail">Loading NOAA predictions...</div><div class="detail">NOAA Bellingham · MLLW datum</div></article>
+ </div>
 </section>
-
-
-  <section class="section">
-    <div class="section-heading">
-      <h2>Bellingham Bay in Motion</h2>
-      <span class="small">NOAA model visualization · Planned</span>
-    </div>
-
-    <div class="panel">
-      <div class="tabs" role="group" aria-label="Map layers">
-        <button class="active" data-layer="currents" aria-pressed="true">Currents</button>
-        <button data-layer="wind" aria-pressed="false">Wind</button>
-        <button data-layer="waves" aria-pressed="false">Waves</button>
-      </div>
-
-      <div class="map" role="status" aria-live="polite">
-        <div class="map-message">
-          <strong id="map-title">Ocean Current Map</strong>
-          <p id="map-description">
-            Animated surface currents and velocity heatmap
-            will appear here once the NOAA model is connected.
-          </p>
-        </div>
-      </div>
-
-      <p class="small">
-        Planned: animated flow particles, color-coded speeds,
-        and a forecast timeline. Model predictions will be
-        labeled separately from measured observations.
-      </p>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Forecasts &amp; Local Resources</h2>
-    <div class="panel">
-      <div class="resource-grid">
-        <a class="resource"
-           href="https://forecast.weather.gov/"
-           target="_blank" rel="noopener noreferrer">
-          <strong>National Weather Service</strong>
-          <span>Official weather forecasts</span>
-        </a>
-
-        <a class="resource"
-           href="https://tidesandcurrents.noaa.gov/"
-           target="_blank" rel="noopener noreferrer">
-          <strong>NOAA Tides &amp; Currents</strong>
-          <span>Water levels and predictions</span>
-        </a>
-
-        <a class="resource"
-           href="https://nwem.apl.uw.edu/"
-           target="_blank" rel="noopener noreferrer">
-          <strong>UW Buoy Network</strong>
-          <span>Local marine observations</span>
-        </a>
-
-        <a class="resource"
-           href="https://surfski.wiki/bellingham_local_conditions"
-           target="_blank" rel="noopener noreferrer">
-          <strong>Bellingham Cameras &amp; Resources</strong>
-          <span>Post Point, Marine Park, and local links</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="notice">
-      <strong>Safety information:</strong>
-      This dashboard is informational and is not a substitute
-      for checking official forecasts, weather warnings,
-      local conditions, and your own paddling abilities.
-      Model forecasts may not accurately represent nearshore conditions.
-    </div>
-  </section>
-
+<section id="currents" aria-labelledby="currents-heading">
+ <div class="section-head"><h2 id="currents-heading">Bellingham Bay Surface Currents</h2><span class="status">NOAA SSCOFS · 24-hour model timeline</span></div>
+ <div class="panel map-panel">
+  <div class="map-intro"><div><strong>Animated current-speed heatmap &amp; streamlines</strong><p>Explore how modeled surface currents change through the forecast. Use Play or the timeline beneath the map. Model guidance, not direct water measurements.</p></div><a class="open-map" href="/currents-v4-2.html" target="_blank" rel="noopener">Open full-screen map ↗</a></div>
+  <div class="frame-shell"><iframe id="currents-map" title="Interactive NOAA Bellingham Bay surface current forecast map" src="/currents-v4-2.html" loading="eager" allowfullscreen></iframe></div>
+  <div class="map-foot">Forecast data is downloaded and validated through GitHub Actions and served by Cloudflare Pages. Read the map's timestamps and freshness notice before interpreting forecasts. <a href="/currents-v4-2.html">Map-only view</a>.</div>
+ </div>
+</section>
+<section id="resources" aria-labelledby="resources-heading">
+ <div class="section-head"><h2 id="resources-heading">Forecasts &amp; Local Resources</h2></div>
+ <div class="panel"><div class="resource-grid">
+  <a class="resource" href="https://forecast.weather.gov/" target="_blank" rel="noopener noreferrer"><strong>National Weather Service</strong><span>Official forecasts and hazardous-weather advisories</span></a>
+  <a class="resource" href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=9449211" target="_blank" rel="noopener noreferrer"><strong>NOAA Bellingham tides</strong><span>Official tide predictions and station information</span></a>
+  <a class="resource" href="https://www.ndbc.noaa.gov/station_page.php?station=46118" target="_blank" rel="noopener noreferrer"><strong>Se'lhaem buoy observations</strong><span>Wind observations and reporting status</span></a>
+  <a class="resource" href="https://surfski.wiki/bellingham_local_conditions" target="_blank" rel="noopener noreferrer"><strong>Bellingham cameras &amp; paddling links</strong><span>Local webcams, launch information and other references</span></a>
+ </div></div>
+</section>
+<section aria-label="Safety information"><div class="notice"><strong>Important:</strong> This dashboard is informational and is not for navigation or on-water safety decisions. NOAA currents are model forecasts; wind and water-temperature readings are separate observations that may be delayed. Check official weather and marine warnings, local conditions, and your own capabilities before paddling.</div></section>
 </main>
-
-<footer>
-  Bellingham Bay Conditions · Pacific Time ·
-  <span id="local-date"></span>
-  <p>Data attribution and observation timestamps will be displayed as feeds are connected.</p>
-</footer>
-
+<footer class="container">Bellingham Bay Conditions · Times shown in Pacific Time where noted · <span id="local-date"></span><p>NOAA CO-OPS / NDBC / SSCOFS and UW NWEM data sources are attributed in their respective sections.</p></footer>
 <script>
-  // Initial dashboard: no live measurements are connected yet.
-
-  const descriptions = {
-    currents: {
-      title: "Ocean Current Map",
-      description: "Animated surface currents and velocity heatmap will appear here once the NOAA model is connected."
-    },
-    wind: {
-      title: "Wind Map",
-      description: "Forecast wind speed, direction, and gust overlays will be added after validating a suitable gridded data source."
-    },
-    waves: {
-      title: "Wave Map",
-      description: "Wave visualization is planned if sufficiently detailed and reliable local model data is available."
-    }
-  };
-
-  document.querySelectorAll("[data-layer]").forEach(button => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll("[data-layer]").forEach(b => {
-        const selected = b === button;
-        b.classList.toggle("active", selected);
-        b.setAttribute("aria-pressed", String(selected));
-      });
-
-      const layer = descriptions[button.dataset.layer];
-      document.getElementById("map-title").textContent = layer.title;
-      document.getElementById("map-description").textContent = layer.description;
-    });
-  });
-
-  // Load NOAA Bellingham tide predictions.
-  async function loadTides() {
-    const tideValue = document.getElementById("tide");
-    const tideDetail = document.getElementById("tide-detail");
-
-    try {
-      const response = await fetch("/api/tides");
-
-      if (!response.ok) {
-        throw new Error("Tide API unavailable");
-      }
-
-      const data = await response.json();
-
-      if (!data.available || !data.nextTide) {
-        throw new Error("No tide predictions available");
-      }
-
-      const next = data.nextTide;
-      const height = Number(next.height);
-      const timestamp = new Date(next.time);
-
-      if (
-        !Number.isFinite(height) ||
-        !Number.isFinite(timestamp.getTime())
-      ) {
-        throw new Error("Invalid tide data");
-      }
-
-      const formattedTime = new Intl.DateTimeFormat(
-        "en-US",
-        {
-          timeZone: "America/Los_Angeles",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          timeZoneName: "short"
-        }
-      ).format(timestamp);
-
-      tideValue.textContent =
-        height.toFixed(1) + " ft";
-
-      tideDetail.textContent =
-        next.type + " tide · " + formattedTime;
-
-    } catch (error) {
-      console.error("Tide loading error:", error);
-      tideValue.textContent = "--";
-      tideDetail.textContent = "Tide data unavailable";
-    }
-  }
-
-  // Load real-time wind observations from Se'lhaem buoy.
-  async function loadWind() {
-    const windValue = document.getElementById("wind");
-    const windDetail = document.getElementById("wind-detail");
-    const gustValue = document.getElementById("gust");
-    const gustDetail = document.getElementById("gust-detail");
-
-    try {
-      const response = await fetch("/api/wind");
-
-      if (!response.ok) {
-        throw new Error("Wind API unavailable");
-      }
-
-      const data = await response.json();
-
-      if (!data.available) {
-        throw new Error("Wind observations are stale or unavailable");
-      }
-
-      const observed = new Date(data.observationTime);
-
-      if (!Number.isFinite(observed.getTime())) {
-        throw new Error("Invalid observation timestamp");
-      }
-
-      const formattedTime = new Intl.DateTimeFormat(
-        "en-US", {
-          timeZone: "America/Los_Angeles",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          timeZoneName: "short"
-        }
-      ).format(observed);
-
-      // Convert wind degrees to compass direction.
-      const compass = degrees => {
-        if (degrees === null || degrees === undefined) {
-          return "Unknown";
-        }
-
-        const directions = [
-          "N", "NNE", "NE", "ENE",
-          "E", "ESE", "SE", "SSE",
-          "S", "SSW", "SW", "WSW",
-          "W", "WNW", "NW", "NNW"
-        ];
-
-        return directions[
-          Math.round(degrees / 22.5) % 16
-        ];
-      };
-
-      const speed = Number(data.windSpeed);
-      const gust = Number(data.windGust);
-
-      windValue.textContent =
-        Number.isFinite(speed)
-          ? speed.toFixed(1) + " mph"
-          : "--";
-
-      gustValue.textContent =
-        Number.isFinite(gust)
-          ? gust.toFixed(1) + " mph"
-          : "--";
-
-      const direction = compass(data.windDirection);
-
-      windDetail.textContent =
-        direction + " (" +
-        (data.windDirection ?? "--") +
-        "°) · " + formattedTime;
-
-      gustDetail.textContent =
-        "Observed " + formattedTime;
-
-    } catch (error) {
-      console.error("Wind loading error:", error);
-      windValue.textContent = "--";
-      gustValue.textContent = "--";
-      windDetail.textContent = "Wind data unavailable";
-      gustDetail.textContent = "Wind data unavailable";
-    }
-  }
-
-  loadWind();
-  setInterval(loadWind, 5 * 60 * 1000);
-
-  // Load water temperature from the Se'lhaem buoy.
-  async function loadWaterTemperature() {
-    const value = document.getElementById("water-temp");
-    const detail = document.getElementById("water-temp-detail");
-
-    try {
-      const response = await fetch("/api/water-temp");
-      const data = await response.json();
-
-      const observed = data.observationTime
-        ? new Date(data.observationTime)
-        : null;
-
-      const validTime =
-        observed && Number.isFinite(observed.getTime());
-
-      const formattedTime = validTime
-        ? new Intl.DateTimeFormat("en-US", {
-            timeZone: "America/Los_Angeles",
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-            timeZoneName: "short"
-          }).format(observed)
-        : null;
-
-      if (
-        data.available &&
-        data.waterTempF != null &&
-        Number.isFinite(Number(data.waterTempF))
-      ) {
-        value.textContent =
-          Number(data.waterTempF).toFixed(1) + "°F";
-
-        detail.textContent =
-          "Observed " + formattedTime;
-      } else if (data.status === "stale" && validTime) {
-        value.textContent = "--";
-        detail.textContent =
-          "Data delayed · Last observed " + formattedTime;
-      } else {
-        value.textContent = "--";
-        detail.textContent = "Temperature data unavailable";
-      }
-
-    } catch (error) {
-      console.error("Water temperature error:", error);
-      value.textContent = "--";
-      detail.textContent = "Temperature data unavailable";
-    }
-  }
-
-  loadWaterTemperature();
-  setInterval(loadWaterTemperature, 15 * 60 * 1000);
-
-  loadTides();
-
-  // Refresh every 15 minutes.
-  setInterval(loadTides, 15 * 60 * 1000);
-
-  document.getElementById("local-date").textContent =
-    new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Los_Angeles",
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    }).format(new Date());
+const pacificTime = date => new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(date);
+const setText=(id,text)=>{document.getElementById(id).textContent=text};
+const compass = degrees => {if(degrees==null||!Number.isFinite(Number(degrees)))return 'Unknown';const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return dirs[((Math.round(Number(degrees)/22.5)%16)+16)%16]};
+async function loadWind(){try{const response=await fetch('/api/wind',{cache:'no-store'});if(!response.ok)throw Error('Wind API unavailable');const d=await response.json();if(!d.available)throw Error('Wind observation unavailable');const observed=new Date(d.observationTime);if(!Number.isFinite(observed.getTime()))throw Error('Invalid timestamp');const speed=d.windSpeed==null?NaN:Number(d.windSpeed),gust=d.windGust==null?NaN:Number(d.windGust);setText('wind',Number.isFinite(speed)?speed.toFixed(1)+' mph':'--');setText('gust',Number.isFinite(gust)?gust.toFixed(1)+' mph':'--');setText('wind-detail',`${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${pacificTime(observed)}`);setText('gust-detail','Observed '+pacificTime(observed))}catch(e){console.warn(e);setText('wind','--');setText('gust','--');setText('wind-detail','Wind data unavailable');setText('gust-detail','Wind data unavailable')}}
+async function loadTides(){try{const response=await fetch('/api/tides',{cache:'no-store'});if(!response.ok)throw Error('Tides API unavailable');const d=await response.json();if(!d.available||!d.nextTide)throw Error('No upcoming tide');const t=d.nextTide;const height=Number(t.height),time=new Date(t.time);if(!Number.isFinite(height)||!Number.isFinite(time.getTime()))throw Error('Invalid tide');setText('tide',height.toFixed(1)+' ft');setText('tide-detail',`${t.type} tide · ${pacificTime(time)}`)}catch(e){console.warn(e);setText('tide','--');setText('tide-detail','Tide predictions unavailable')}}
+async function loadWaterTemperature(){try{const response=await fetch('/api/water-temp',{cache:'no-store'});if(!response.ok)throw Error('Temperature API unavailable');const d=await response.json();const time=d.observationTime?new Date(d.observationTime):null;const valid=!!time&&Number.isFinite(time.getTime());if(d.available&&d.waterTempF!=null&&Number.isFinite(Number(d.waterTempF))){setText('water-temp',Number(d.waterTempF).toFixed(1)+'°F');setText('water-temp-detail',valid?'Observed '+pacificTime(time):'Recent reported observation')}else if(d.status==='stale'&&valid){setText('water-temp','--');setText('water-temp-detail','Data delayed · Last observed '+pacificTime(time))}else{setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}catch(e){console.warn(e);setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}
+loadWind();loadTides();loadWaterTemperature();setInterval(loadWind,5*60*1000);setInterval(loadTides,15*60*1000);setInterval(loadWaterTemperature,15*60*1000);
+setText('local-date',new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',year:'numeric'}).format(new Date()));
+// Both pages are served from this same Cloudflare Pages origin. Adjust height to fit the map controls.
+const frame=document.getElementById('currents-map');
+function fitFrame(){try{const doc=frame.contentDocument;if(!doc||!doc.body)return;const needed=Math.ceil(Math.max(doc.body.scrollHeight,doc.documentElement.scrollHeight));if(needed>600&&needed<2400&&Math.abs(frame.offsetHeight-needed)>4)frame.style.height=needed+'px'}catch(e){/* On other origins, retain CSS fallback height. */}}
+frame.addEventListener('load',()=>{fitFrame();try{if('ResizeObserver'in window){const observer=new ResizeObserver(()=>fitFrame());observer.observe(frame.contentDocument.body)}else{setTimeout(fitFrame,600)}}catch(e){}});
+window.addEventListener('resize',()=>setTimeout(fitFrame,100));
 </script>
-
-</body>
-</html>
-
+</body></html>
