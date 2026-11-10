@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bellingham Bay NOAA Currents — Sample Preview</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#173449}*{box-sizing:border-box}body{margin:0;background:#eef3f7}.wrap{max-width:1100px;margin:auto;padding:18px}h1{margin:0 0 4px;font-size:clamp(1.4rem,3vw,2rem)}.intro{color:#506575;font-size:14px;margin:0 0 14px}.banner{padding:9px 13px;border-left:4px solid #d28e34;background:#fff8ec;margin:12px 0;font-size:13px}.panel{background:white;border:1px solid #d9e5ec;border-radius:12px;overflow:hidden}#map{height:min(67vh,620px);min-height:380px;position:relative;background:#b8d9ec}canvas{position:absolute;inset:0;pointer-events:none;z-index:450}.leaflet-control-attribution{font-size:10px!important}.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 15px}.bar button{border:1px solid #a8c0cf;border-radius:7px;background:#fff;padding:8px 12px;cursor:pointer}.bar button:hover{background:#e7f2f8}.bar input{flex:1;min-width:160px;accent-color:#126e98}#timestamp{font-weight:700;font-size:13px}.legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#526777;font-size:12px;padding:0 15px 14px}.ramp{height:12px;width:180px;border-radius:5px;background:linear-gradient(to right,#99d9de,#4ab6bd,#2a8aa8,#2b5298,#773d9a,#b52955)}.small{font-size:12px;color:#60727e;padding:0 15px 13px}.error{color:#9a2727;padding:25px}
+</style></head><body><div class="wrap"><h1>Bellingham Bay in Motion</h1><p class="intro">Proof of concept from NOAA SSCOFS surface-current model • 25 hourly snapshots • 1,009 sampled grid cells</p><div class="banner"><strong>Historical model sample, not a live forecast.</strong> Colors indicate current speed; moving strokes follow the model's current vectors. This preview is not for navigation or safety decisions.</div><div class="panel"><div id="map"></div><div class="bar"><button id="play">▶ Play</button><input type="range" id="hour" value="0" min="0" max="24" step="1" aria-label="Forecast hour"><span id="timestamp">Loading…</span></div><div class="legend"><span>Current speed</span><div class="ramp"></div><span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1+ m/s</span></div><div class="small">Source: NOAA SSCOFS FVCOM model, November 8–9, 2026. Sampled cell-center velocities; circles are an approximation, not the native model mesh. Data are model nowcasts, not measured currents. Map © OpenStreetMap contributors.</div></div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(async()=>{
+const area=document.getElementById('map');const timeLabel=document.getElementById('timestamp');
+let raw;
+try{const r=await fetch('./currents-sample.json');if(!r.ok)throw Error('Sample data missing ('+r.status+')');raw=await r.json();}catch(e){area.innerHTML='<div class="error">Could not load currents-sample.json. Upload both files to the same directory on Cloudflare Pages. '+e.message+'</div>';return;}
+if(typeof L==='undefined'){area.innerHTML='<div class="error">Leaflet mapping library could not load. Check internet access.</div>';return;}
+const map=L.map(area,{zoomControl:true,preferCanvas:true}).setView([48.738,-122.569],12);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');area.appendChild(canvas);const ctx=canvas.getContext('2d');
+const slider=document.getElementById('hour');const play=document.getElementById('play');let frame=0, playing=false, lastAdvance=0, last=0, screen=[], streaks=[];
+const colors=['#99d9de','#55c4cf','#3095b4','#315f9a','#713c9d','#b52955'];
+function color(x){return colors[Math.min(colors.length-1,Math.floor(x/0.2))]}
+function reset(){let w=area.clientWidth,h=area.clientHeight,dpr=window.devicePixelRatio||1;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);screen=raw.points.map(p=>map.latLngToContainerPoint(p));streaks=Array.from({length:180},()=>({idx:Math.floor(Math.random()*screen.length),phase:Math.random()}));draw(0)}
+function setFrame(n){frame=n;slider.value=n;const iso=raw.times[n];timeLabel.textContent=new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(new Date(iso));draw(0)}
+function draw(t){let w=area.clientWidth,h=area.clientHeight;ctx.clearRect(0,0,w,h);let vect=raw.vectors[frame];
+// Render measured model cell-center values without fabricating a continuous raster.
+for(let i=0;i<screen.length;i++){const vel=vect[i];if(!vel)continue;const p=screen[i];if(p.x< -20||p.y< -20||p.x>w+20||p.y>h+20)continue;const speed=Math.hypot(vel[0],vel[1])/1000;ctx.fillStyle=color(speed);ctx.globalAlpha=.70;ctx.beginPath();ctx.arc(p.x,p.y,Math.max(3,Math.min(8,map.getZoom()*0.47)),0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+const delta=t?Math.min(0.05,(t-last)/1000):0;last=t;
+for(const s of streaks){let p=screen[s.idx],vel=vect[s.idx];if(!vel)continue;const dx=vel[0]/1000,dy=vel[1]/1000;const speed=Math.hypot(dx,dy);if(speed<.015)continue;s.phase=(s.phase+delta*(.2+speed)*.8)%1;
+const length=Math.min(17,5+speed*15);const distance=s.phase*24;let x=p.x+dx/(speed||1)*distance,y=p.y-dy/(speed||1)*distance;
+if(x<0||x>w||y<0||y>h)continue;
+ctx.strokeStyle='rgba(7,35,60,.9)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-dx/speed*length,y+dy/speed*length);ctx.lineTo(x,y);ctx.stroke();}
+}
+function tick(t){if(playing&&t-lastAdvance>950){setFrame((frame+1)%raw.times.length);lastAdvance=t;}draw(t);requestAnimationFrame(tick)}
+slider.max=String(raw.times.length-1);slider.addEventListener('input',()=>setFrame(Number(slider.value)));
+play.addEventListener('click',()=>{playing=!playing;play.textContent=playing?'❚❚ Pause':'▶ Play';lastAdvance=performance.now()});
+map.on('move zoom resize',reset);new ResizeObserver(reset).observe(area);reset();setFrame(0);requestAnimationFrame(tick);
+})();
+</script></body></html>
