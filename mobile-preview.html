@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102d40">
+<meta name="description" content="Bellingham Bay paddling conditions: local wind observations, NOAA tide predictions, water temperature, and an animated 24-hour surface-current forecast.">
+<title>Mobile Preview | Bellingham Bay Conditions</title>
+<style>
+:root{--navy:#102d40;--navy2:#183d53;--blue:#17648c;--bg:#f2f6f8;--text:#233746;--muted:#5c7080;--border:#d9e4ea;--pale:#e7f2f7}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:var(--bg)}
+a{color:var(--blue);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:3px solid #e4a642;outline-offset:3px}
+header{background:linear-gradient(125deg,#102d40,#174762);color:white;padding:30px 20px 32px}
+.container{max-width:1240px;margin-inline:auto}
+header h1{font-size:clamp(1.75rem,3.3vw,2.55rem);letter-spacing:-.035em;margin:0 0 4px;line-height:1.17}
+header p{margin:0;color:#c9dce6;font-size:clamp(.9rem,1.6vw,1.02rem)}
+.top-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.top-links a{color:#e9f5fc;text-decoration:none;font-size:.84rem;padding:6px 11px;border:1px solid #5d8295;border-radius:999px}
+.top-links a:hover{background:#295569}
+main{padding:26px 16px 35px}
+section{margin-bottom:26px}
+.section-head{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 13px}
+h2{font-size:1.32rem;letter-spacing:-.015em;margin:0}
+.small{font-size:.83rem;color:var(--muted)}
+.status{display:inline-block;font-size:.78rem;font-weight:650;border-radius:20px;padding:5px 11px;background:var(--pale);color:var(--blue)}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.card,.panel{border:1px solid var(--border);border-radius:13px;background:#fff;box-shadow:0 3px 12px rgba(18,45,65,.035)}
+.card{min-height:174px;padding:20px 19px}
+.card-label{font-size:.92rem;color:var(--muted);margin-bottom:11px}
+.value{font-size:clamp(1.65rem,2.4vw,2.15rem);font-weight:750;letter-spacing:-.038em;color:var(--navy);white-space:nowrap}
+.detail{font-size:.79rem;color:var(--muted);margin-top:7px;overflow-wrap:anywhere}
+.panel{padding:20px}
+.map-panel{padding:0;overflow:hidden}
+.map-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.open-map{display:inline-flex;align-items:center;text-decoration:none;font-size:.86rem;font-weight:700;white-space:nowrap;border:1px solid var(--border);border-radius:9px;padding:9px 13px}
+.open-map:hover{background:var(--pale)}
+.frame-shell{background:#08131b;position:relative}
+#currents-map{width:100%;height:1050px;border:0;display:block;background:#08131b}
+.map-foot{padding:12px 20px 16px;font-size:.82rem;color:var(--muted)}
+.resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.resource{text-decoration:none;display:block;padding:15px;border:1px solid var(--border);border-radius:9px}
+.resource:hover{background:var(--pale)}
+.resource strong{display:block;font-size:.91rem;margin-bottom:2px}
+.resource span{font-size:.8rem;color:var(--muted)}
+.notice{border-left:4px solid #c99035;background:#fff9ec;padding:14px 17px;font-size:.86rem;border-radius:5px}
+footer{padding:6px 16px 28px;color:var(--muted);text-align:center;font-size:.78rem}
+footer p{margin:6px 0}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){main{padding:19px 12px 22px}header{padding:26px 14px}.cards{gap:9px}.card{min-height:170px;padding:14px 13px}.card-label{margin-bottom:8px}.value{font-size:1.55rem}.detail{font-size:.75rem}.panel{padding:15px}.map-panel{padding:0}.map-actions{width:100%}.map-foot{padding:12px 15px}.resource-grid{grid-template-columns:1fr}#currents-map{height:1030px}.section-head{align-items:flex-start}section{margin-bottom:24px}}
+@media(max-width:365px){.cards{grid-template-columns:1fr}.card{min-height:145px}}
+
+/* Live bay cameras — unchanged. */
+.camera-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.camera-card{min-width:0;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:13px;box-shadow:0 3px 12px rgba(18,45,65,.035)}
+.camera-stage{position:relative;aspect-ratio:16/9;background:#0a1a25}
+.camera-stage iframe{display:block;width:100%;height:100%;border:0;background:#0a1a25}
+.camera-body{padding:13px 14px 15px}
+.camera-body h3{font-size:1.02rem;margin:0 0 5px;color:var(--navy)}
+.camera-body p{color:var(--muted);font-size:.78rem;line-height:1.45;margin:0 0 10px}
+.camera-link{font-size:.82rem;font-weight:650}
+.camera-note{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+@media(max-width:980px){.camera-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.camera-grid{grid-template-columns:1fr}.camera-body{padding:12px}}
+
+/* Preview banner is clearly identified, not intended for production. */
+.mobile-preview-notice{padding:11px 14px;background:#e6f4f9;border:1px solid #b9e0ec;border-radius:12px;color:#16445b;margin:0 0 20px;font-size:.84rem}
+@media(max-width:620px){
+  #currents-map{height:850px}
+  .map-foot{font-size:.78rem}
+  .open-map{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+}
+</style>
+</head>
+<body>
+<header><div class="container">
+  <h1>Bellingham Bay Conditions</h1>
+  <p>Wind, tides, water temperature &amp; modeled currents for paddlers</p>
+  <nav class="top-links" aria-label="Page sections">
+    <a href="#conditions">Current conditions</a><a href="#cameras">Live bay cameras</a><a href="#currents">24-hour current forecast</a><a href="#resources">Local resources</a>
+  </nav>
+</div></header>
+<main class="container">
+<div class="mobile-preview-notice" role="status"><strong>Mobile test preview</strong> — your live homepage has not been changed. Try scrolling over the current map with one finger.</div>
+<section id="conditions" aria-labelledby="conditions-heading">
+ <div class="section-head"><h2 id="conditions-heading">Current Conditions</h2><span class="status">Observations &amp; predictions · refreshed periodically</span></div>
+ <div class="cards">
+  <article class="card"><div class="card-label">Wind Speed</div><div class="value" id="wind">--</div><div class="detail" id="wind-detail">Loading buoy observations...</div><div class="detail">NOAA NDBC · Se'lhaem buoy</div></article>
+  <article class="card"><div class="card-label">Wind Gusts</div><div class="value" id="gust">--</div><div class="detail" id="gust-detail">Loading buoy observations...</div><div class="detail">NOAA NDBC · Se'lhaem buoy</div></article>
+  <article class="card"><div class="card-label">Water Temperature</div><div class="value" id="water-temp">--</div><div class="detail" id="water-temp-detail">Checking observation availability...</div><div class="detail">Local buoy / NOAA SSCOFS · measured or modeled</div></article>
+  <article class="card"><div class="card-label">Next Tide (Predicted)</div><div class="value" id="tide">--</div><div class="detail" id="tide-detail">Loading NOAA predictions...</div><div class="detail">NOAA Bellingham · MLLW datum</div></article>
+ </div>
+</section>
+<section id="cameras" aria-labelledby="cameras-heading">
+ <div class="section-head"><h2 id="cameras-heading">Live Bay Cameras</h2><span class="status">Third-party streams · availability may vary</span></div>
+ <div class="camera-grid">
+  <article class="camera-card">
+   <div class="camera-stage"><iframe title="Marine Park panorama live camera" src="https://www.youtube-nocookie.com/embed/DH0x6KOTreU?autoplay=1&amp;mute=1&amp;playsinline=1&amp;rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+   <div class="camera-body"><h3>Marine Park Panorama</h3><p>Wide view of Bellingham Bay from Marine Park. Operated by the Port of Bellingham.</p><a class="camera-link" href="https://www.youtube.com/watch?v=DH0x6KOTreU" target="_blank" rel="noopener noreferrer">Open original live stream ↗</a></div>
+  </article>
+  <article class="camera-card">
+   <div class="camera-stage"><iframe title="Zuanich Point Park live bay camera" src="https://www.youtube-nocookie.com/embed/6j0aasCRk_k?autoplay=1&amp;mute=1&amp;playsinline=1&amp;rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+   <div class="camera-body"><h3>Zuanich Point Park</h3><p>North-side view over Bellingham Bay, from the Fishermen’s Pavilion. Operated by the Port of Bellingham.</p><a class="camera-link" href="https://www.youtube.com/watch?v=6j0aasCRk_k" target="_blank" rel="noopener noreferrer">Open original live stream ↗</a></div>
+  </article>
+  <article class="camera-card">
+   <div class="camera-stage"><iframe title="Marine Park camera facing Post Point live view" src="https://www.youtube-nocookie.com/embed/heT-YAhjxiY?autoplay=1&amp;mute=1&amp;playsinline=1&amp;rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+   <div class="camera-body"><h3>Marine Park → Post Point</h3><p>Southwest-facing view across Bellingham Bay toward Post Point from Marine Park. Operated by the Port of Bellingham.</p><a class="camera-link" href="https://www.youtube.com/watch?v=heT-YAhjxiY" target="_blank" rel="noopener noreferrer">Open original live stream ↗</a></div>
+  </article>
+ </div>
+ <p class="camera-note">Cameras are hosted by their respective operators, not by this dashboard. A camera may be offline or block embedding; use its original-stream link if the player is blank. Images are informational and do not replace conditions observed at your launch site.</p>
+</section>
+<section id="currents" aria-labelledby="currents-heading">
+ <div class="section-head"><h2 id="currents-heading">24-Hour Surface Current Forecast</h2><div class="map-actions"><span class="status">NOAA SSCOFS · Model guidance</span><a class="open-map" href="/currents-v4-2.html" target="_blank" rel="noopener">Full-screen map ↗</a></div></div>
+ <div class="panel map-panel">
+  <div class="frame-shell"><iframe id="currents-map" title="Interactive NOAA Bellingham Bay 24-hour surface current forecast" src="/currents-mobile-preview.html?embed=1" loading="eager" allowfullscreen></iframe></div>
+  <div class="map-foot">Swipe vertically over the map to scroll this page. Tap the water for a local current reading; open the full-screen map for unrestricted panning and zooming. Select a time or press Play beneath the map. Currents are modeled forecasts, not direct measurements; check the forecast-valid time and freshness warning. <a href="/currents-v4-2.html">Map-only view</a>.</div>
+ </div>
+</section>
+<section id="resources" aria-labelledby="resources-heading">
+ <div class="section-head"><h2 id="resources-heading">Forecasts &amp; Local Resources</h2></div>
+ <div class="panel"><div class="resource-grid">
+  <a class="resource" href="https://forecast.weather.gov/" target="_blank" rel="noopener noreferrer"><strong>National Weather Service</strong><span>Official forecasts and hazardous-weather advisories</span></a>
+  <a class="resource" href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=9449211" target="_blank" rel="noopener noreferrer"><strong>NOAA Bellingham tides</strong><span>Official tide predictions and station information</span></a>
+  <a class="resource" href="https://www.ndbc.noaa.gov/station_page.php?station=46118" target="_blank" rel="noopener noreferrer"><strong>Se'lhaem buoy observations</strong><span>Wind observations and reporting status</span></a>
+  <a class="resource" href="https://surfski.wiki/bellingham_local_conditions" target="_blank" rel="noopener noreferrer"><strong>Bellingham cameras &amp; paddling links</strong><span>Local webcams, launch information and other references</span></a>
+ </div></div>
+</section>
+<section aria-label="Safety information"><div class="notice"><strong>Important:</strong> This dashboard is informational and is not for navigation or on-water safety decisions. NOAA currents are model forecasts; wind is observed, while water temperature may be a buoy observation or a clearly labeled NOAA model estimate. Check official weather and marine warnings, local conditions, and your own capabilities before paddling.</div></section>
+</main>
+<footer class="container">Bellingham Bay Conditions · Times shown in Pacific Time where noted · <span id="local-date"></span><p>NOAA CO-OPS / NDBC / SSCOFS and UW NWEM data sources are attributed in their respective sections.</p></footer>
+<script>
+const pacificTime = date => new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(date);
+const setText=(id,text)=>{document.getElementById(id).textContent=text};
+const compass = degrees => {if(degrees==null||!Number.isFinite(Number(degrees)))return 'Unknown';const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return dirs[((Math.round(Number(degrees)/22.5)%16)+16)%16]};
+async function loadWind(){try{const response=await fetch('/api/wind',{cache:'no-store'});if(!response.ok)throw Error('Wind API unavailable');const d=await response.json();if(!d.available)throw Error('Wind observation unavailable');const observed=new Date(d.observationTime);if(!Number.isFinite(observed.getTime()))throw Error('Invalid timestamp');const speed=d.windSpeed==null?NaN:Number(d.windSpeed),gust=d.windGust==null?NaN:Number(d.windGust);setText('wind',Number.isFinite(speed)?speed.toFixed(1)+' mph':'--');setText('gust',Number.isFinite(gust)?gust.toFixed(1)+' mph':'--');setText('wind-detail',`${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${pacificTime(observed)}`);setText('gust-detail','Observed '+pacificTime(observed))}catch(e){console.warn(e);setText('wind','--');setText('gust','--');setText('wind-detail','Wind data unavailable');setText('gust-detail','Wind data unavailable')}}
+async function loadTides(){try{const response=await fetch('/api/tides',{cache:'no-store'});if(!response.ok)throw Error('Tides API unavailable');const d=await response.json();if(!d.available||!d.nextTide)throw Error('No upcoming tide');const t=d.nextTide;const height=Number(t.height),time=new Date(t.time);if(!Number.isFinite(height)||!Number.isFinite(time.getTime()))throw Error('Invalid tide');setText('tide',height.toFixed(1)+' ft');setText('tide-detail',`${t.type} tide · ${pacificTime(time)}`)}catch(e){console.warn(e);setText('tide','--');setText('tide-detail','Tide predictions unavailable')}}
+async function loadWaterTemperature(){try{const response=await fetch('/api/water-temp',{cache:'no-store'});if(!response.ok)throw Error('Temperature API unavailable');const d=await response.json();const observed=d.observationTime?new Date(d.observationTime):null;const validObserved=observed&&Number.isFinite(observed.getTime());const model=d.modelValidUTC?new Date(d.modelValidUTC):null;const validModel=model&&Number.isFinite(model.getTime());if(d.available&&d.waterTempF!=null&&Number.isFinite(Number(d.waterTempF))){setText('water-temp',Number(d.waterTempF).toFixed(1)+'°F');if(d.dataType==='modeled_surface_temperature'){setText('water-temp-detail',validModel?'NOAA modeled · Valid '+pacificTime(model):'NOAA modeled · Forecast surface temperature')}else{setText('water-temp-detail',validObserved?'Observed '+pacificTime(observed):'Recent buoy observation')}}else if(d.status==='stale'&&validObserved){setText('water-temp','--');setText('water-temp-detail','Data delayed · Last observed '+pacificTime(observed))}else{setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}catch(e){console.warn(e);setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}
+loadWind();loadTides();loadWaterTemperature();setInterval(loadWind,5*60*1000);setInterval(loadTides,15*60*1000);setInterval(loadWaterTemperature,15*60*1000);
+setText('local-date',new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',year:'numeric'}).format(new Date()));
+// Both pages are served from this same Cloudflare Pages origin. Adjust height to fit the map controls.
+const frame=document.getElementById('currents-map');
+function fitFrame(){try{const doc=frame.contentDocument;if(!doc||!doc.body)return;const needed=Math.ceil(Math.max(doc.body.scrollHeight,doc.documentElement.scrollHeight));if(needed>600&&needed<2400&&Math.abs(frame.offsetHeight-needed)>4)frame.style.height=needed+'px'}catch(e){/* On other origins, retain CSS fallback height. */}}
+frame.addEventListener('load',()=>{fitFrame();try{if('ResizeObserver'in window){const observer=new ResizeObserver(()=>fitFrame());observer.observe(frame.contentDocument.body)}else{setTimeout(fitFrame,600)}}catch(e){}});
+window.addEventListener('resize',()=>setTimeout(fitFrame,100));
+
+</script>
+</body></html>
