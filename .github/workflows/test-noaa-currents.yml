@@ -1,0 +1,45 @@
+name: Test NOAA Bellingham Currents
+
+on:
+  workflow_dispatch:
+    inputs:
+      forecast_hours:
+        description: "NOAA forecast hours (start with 3; later try 3,6,9)"
+        required: true
+        default: "3"
+
+permissions:
+  contents: read
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install data libraries
+        run: python -m pip install --disable-pip-version-check numpy requests netCDF4
+      - name: Fetch NOAA model and convert Bellingham subset
+        run: python scripts/update_sscofs.py --hours "${{ inputs.forecast_hours }}" --output currents-live-data.json
+      - name: Validate JSON schema and freshness
+        run: |
+          python - <<'PY'
+          import json, datetime
+          with open('currents-live-data.json') as f:
+              d=json.load(f)
+          assert len(d['times']) >= 1
+          assert len(d['triangles']) > 100
+          assert len(d['vectors']) == len(d['times'])
+          assert len(d['vectors'][0]) == len(d['nodes'])
+          print('Success:', len(d['times']), 'snapshots,', len(d['triangles']), 'water triangles')
+          print('First valid time:', d['times'][0])
+          PY
+      - name: Downloadable test artifact — do not publish yet
+        uses: actions/upload-artifact@v4
+        with:
+          name: bellingham-noaa-test-data
+          path: currents-live-data.json
+          retention-days: 3
