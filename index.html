@@ -65,6 +65,13 @@ footer p{margin:6px 0}
 .camera-note{font-size:.8rem;color:var(--muted);margin:10px 0 0}
 @media(max-width:980px){.camera-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.camera-grid{grid-template-columns:1fr}.camera-body{padding:12px}}
+
+/* Load the Fairhaven stream on demand to reduce concurrent video traffic. */
+.camera-play{display:flex;position:absolute;inset:0;width:100%;height:100%;border:0;background:linear-gradient(140deg,#153d51,#091c29);color:white;cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:7px;font:700 .95rem/1.3 system-ui,sans-serif;text-align:center;padding:14px}
+.camera-play:hover{background:linear-gradient(140deg,#205b73,#0c2735)}
+.camera-play:focus-visible{outline:3px solid #e4a642;outline-offset:-5px}
+.camera-play-icon{border-radius:50%;background:#ffffff29;display:grid;place-items:center;width:52px;height:52px;font-size:1.3rem;padding-left:3px}
+.camera-play small{font-size:.74rem;font-weight:400;color:#bed4df}
 </style>
 </head>
 <body>
@@ -76,7 +83,6 @@ footer p{margin:6px 0}
   </nav>
 </div></header>
 <main class="container">
-
 <section id="conditions" aria-labelledby="conditions-heading">
  <div class="section-head"><h2 id="conditions-heading">Current Conditions</h2><span class="status">Observations &amp; predictions · refreshed periodically</span></div>
  <div class="cards">
@@ -98,7 +104,13 @@ footer p{margin:6px 0}
    <div class="camera-body"><h3>Zuanich Point Park</h3><p>North-side view over Bellingham Bay, from the Fishermen’s Pavilion. Operated by the Port of Bellingham.</p><a class="camera-link" href="https://www.youtube.com/watch?v=6j0aasCRk_k" target="_blank" rel="noopener noreferrer">Open original live stream ↗</a></div>
   </article>
   <article class="camera-card">
-   <div class="camera-stage"><iframe title="Fairhaven Cove live camera" src="https://player.brownrice.com/embed/bellingham5/live" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+   <div class="camera-stage" id="fairhaven-stage">
+    <button type="button" class="camera-play" id="fairhaven-play" aria-label="Play Fairhaven Cove live camera">
+      <span class="camera-play-icon" aria-hidden="true">▶</span>
+      <span>Play Fairhaven Cove camera</span>
+      <small>Loads the live player when selected</small>
+    </button>
+   </div>
    <div class="camera-body"><h3>Fairhaven Cove</h3><p>View toward Fairhaven Cove and the marina. Operated by the Community Boating Center.</p><a class="camera-link" href="https://player.brownrice.com/embed/bellingham5/live" target="_blank" rel="noopener noreferrer">Open original live stream ↗</a></div>
   </article>
  </div>
@@ -137,5 +149,18 @@ const frame=document.getElementById('currents-map');
 function fitFrame(){try{const doc=frame.contentDocument;if(!doc||!doc.body)return;const needed=Math.ceil(Math.max(doc.body.scrollHeight,doc.documentElement.scrollHeight));if(needed>600&&needed<2400&&Math.abs(frame.offsetHeight-needed)>4)frame.style.height=needed+'px'}catch(e){/* On other origins, retain CSS fallback height. */}}
 frame.addEventListener('load',()=>{fitFrame();try{if('ResizeObserver'in window){const observer=new ResizeObserver(()=>fitFrame());observer.observe(frame.contentDocument.body)}else{setTimeout(fitFrame,600)}}catch(e){}});
 window.addEventListener('resize',()=>setTimeout(fitFrame,100));
+
+// Fairhaven player is intentionally created only after user interaction.
+const fairhavenPlay=document.getElementById('fairhaven-play');
+if(fairhavenPlay){fairhavenPlay.addEventListener('click',()=>{
+ const stage=document.getElementById('fairhaven-stage');
+ const video=document.createElement('iframe');
+ video.title='Fairhaven Cove live camera';
+ video.src='https://player.brownrice.com/embed/bellingham5/live';
+ video.allow='autoplay; fullscreen; picture-in-picture';
+ video.allowFullscreen=true;
+ video.referrerPolicy='strict-origin-when-cross-origin';
+ stage.replaceChildren(video);
+});}
 </script>
 </body></html>
