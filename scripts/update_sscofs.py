@@ -234,15 +234,15 @@ def download(url, dest):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--sample', help='Local NOAA subset for offline conversion test')
-    p.add_argument('--hours', default='3', help='Comma-separated forecast hours, e.g. 3 or 3,6,9 (one NOAA file per hour)')
+    p.add_argument('--hours', default='3,6,9,12,15,18,21,24,27', help='Comma-separated forecast hours, e.g. 3 or 3,6,9 (one NOAA file per hour)')
     p.add_argument('--output', default='currents-live-data.json')
     args = p.parse_args()
     if args.sample:
         convert_files([(Path(args.sample), None)], 'historical modeled nowcast sample', args.output)
         return
     hours = [int(x) for x in args.hours.split(',')]
-    if not hours or len(hours) > 5 or any(h < 0 or h > 72 for h in hours):
-        raise SystemExit('Choose 1-5 forecast hours from 0 to 72')
+    if not hours or len(hours) > 9 or len(set(hours)) != len(hours) or any(h < 0 or h > 72 for h in hours):
+        raise SystemExit('Choose 1-9 distinct forecast hours from 0 to 72')
     now = dt.datetime.now(dt.timezone.utc)
     failures = []
     with tempfile.TemporaryDirectory() as d:
