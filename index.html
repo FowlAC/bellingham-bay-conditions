@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#102d40">
 <meta name="description" content="Bellingham Bay paddling conditions: local wind observations, NOAA tide predictions, water temperature, and an animated 24-hour surface-current forecast.">
-<title>Mobile Preview | Bellingham Bay Conditions</title>
+<title>Bellingham Bay Conditions | Wind, Tides, Currents &amp; Webcams</title>
 <style>
 :root{--navy:#102d40;--navy2:#183d53;--blue:#17648c;--bg:#f2f6f8;--text:#233746;--muted:#5c7080;--border:#d9e4ea;--pale:#e7f2f7}
 *{box-sizing:border-box}
@@ -66,13 +66,22 @@ footer p{margin:6px 0}
 @media(max-width:980px){.camera-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.camera-grid{grid-template-columns:1fr}.camera-body{padding:12px}}
 
-/* Preview banner is clearly identified, not intended for production. */
-.mobile-preview-notice{padding:11px 14px;background:#e6f4f9;border:1px solid #b9e0ec;border-radius:12px;color:#16445b;margin:0 0 20px;font-size:.84rem}
 @media(max-width:620px){
   #currents-map{height:850px}
   .map-foot{font-size:.78rem}
   .open-map{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 }
+/* Bellingham south-wind pressure-gradient indicator */
+.gradient-panel{padding:16px 20px}
+.gradient-layout{display:grid;grid-template-columns:minmax(160px,1fr) minmax(240px,2fr);gap:20px;align-items:center}
+.gradient-title{font-size:1rem;font-weight:730;color:var(--navy);margin:0 0 3px}
+.gradient-reading{font-size:clamp(1.75rem,3vw,2.2rem);font-weight:750;letter-spacing:-.04em;color:var(--navy);line-height:1.2;margin:7px 0 4px}
+.gradient-eyebrow{font-size:.8rem;color:var(--muted)}
+.gradient-interpretation{font-size:.95rem;font-weight:650;color:var(--navy);margin:0 0 6px}
+.gradient-explanation{font-size:.79rem;line-height:1.5;color:var(--muted);margin:0}
+.gradient-meta{font-size:.78rem;color:var(--muted);margin-top:10px}
+.gradient-meta a{white-space:nowrap}
+@media(max-width:620px){.gradient-panel{padding:15px}.gradient-layout{grid-template-columns:1fr;gap:11px}.gradient-reading{margin:5px 0}.gradient-meta{margin-top:12px}}
 </style>
 </head>
 <body>
@@ -84,7 +93,6 @@ footer p{margin:6px 0}
   </nav>
 </div></header>
 <main class="container">
-<div class="mobile-preview-notice" role="status"><strong>Mobile test preview</strong> — your live homepage has not been changed. Try scrolling over the current map with one finger.</div>
 <section id="conditions" aria-labelledby="conditions-heading">
  <div class="section-head"><h2 id="conditions-heading">Current Conditions</h2><span class="status">Observations &amp; predictions · refreshed periodically</span></div>
  <div class="cards">
@@ -92,6 +100,24 @@ footer p{margin:6px 0}
   <article class="card"><div class="card-label">Wind Gusts</div><div class="value" id="gust">--</div><div class="detail" id="gust-detail">Loading buoy observations...</div><div class="detail">NOAA NDBC · Se'lhaem buoy</div></article>
   <article class="card"><div class="card-label">Water Temperature</div><div class="value" id="water-temp">--</div><div class="detail" id="water-temp-detail">Checking observation availability...</div><div class="detail">Local buoy / NOAA SSCOFS · measured or modeled</div></article>
   <article class="card"><div class="card-label">Next Tide (Predicted)</div><div class="value" id="tide">--</div><div class="detail" id="tide-detail">Loading NOAA predictions...</div><div class="detail">NOAA Bellingham · MLLW datum</div></article>
+ </div>
+</section>
+<section id="south-wind" aria-labelledby="south-wind-heading">
+ <div class="panel gradient-panel">
+  <div class="gradient-layout">
+   <div>
+    <h2 class="gradient-title" id="south-wind-heading">South-Wind Pressure Gradient</h2>
+    <div class="gradient-eyebrow">Arlington − Eastsound · Airport pressure</div>
+    <div class="gradient-reading" id="gradient-value" aria-live="polite">-- inHg</div>
+    <div class="gradient-eyebrow" id="gradient-status">Loading NOAA station observations...</div>
+   </div>
+   <div>
+    <p class="gradient-interpretation" id="gradient-interpretation">Checking the south-wind indicator</p>
+    <p class="gradient-explanation" id="gradient-explanation">A positive pressure difference can favor southerly winds. This is an informal Bellingham paddlers' rule of thumb, not an official wind forecast.</p>
+    <div class="gradient-meta" id="gradient-stations">NOAA Aviation Weather Center · KAWO and KORS</div>
+   </div>
+  </div>
+  <div class="gradient-meta">Local interpretation: <a href="https://surfski.wiki/bellingham_local_conditions" target="_blank" rel="noopener noreferrer">Bellingham paddling conditions guide</a>. Compare with observed wind and official marine forecasts; the gradient does not establish on-water safety.</div>
  </div>
 </section>
 <section id="cameras" aria-labelledby="cameras-heading">
@@ -138,6 +164,45 @@ const compass = degrees => {if(degrees==null||!Number.isFinite(Number(degrees)))
 async function loadWind(){try{const response=await fetch('/api/wind',{cache:'no-store'});if(!response.ok)throw Error('Wind API unavailable');const d=await response.json();if(!d.available)throw Error('Wind observation unavailable');const observed=new Date(d.observationTime);if(!Number.isFinite(observed.getTime()))throw Error('Invalid timestamp');const speed=d.windSpeed==null?NaN:Number(d.windSpeed),gust=d.windGust==null?NaN:Number(d.windGust);setText('wind',Number.isFinite(speed)?speed.toFixed(1)+' mph':'--');setText('gust',Number.isFinite(gust)?gust.toFixed(1)+' mph':'--');setText('wind-detail',`${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${pacificTime(observed)}`);setText('gust-detail','Observed '+pacificTime(observed))}catch(e){console.warn(e);setText('wind','--');setText('gust','--');setText('wind-detail','Wind data unavailable');setText('gust-detail','Wind data unavailable')}}
 async function loadTides(){try{const response=await fetch('/api/tides',{cache:'no-store'});if(!response.ok)throw Error('Tides API unavailable');const d=await response.json();if(!d.available||!d.nextTide)throw Error('No upcoming tide');const t=d.nextTide;const height=Number(t.height),time=new Date(t.time);if(!Number.isFinite(height)||!Number.isFinite(time.getTime()))throw Error('Invalid tide');setText('tide',height.toFixed(1)+' ft');setText('tide-detail',`${t.type} tide · ${pacificTime(time)}`)}catch(e){console.warn(e);setText('tide','--');setText('tide-detail','Tide predictions unavailable')}}
 async function loadWaterTemperature(){try{const response=await fetch('/api/water-temp',{cache:'no-store'});if(!response.ok)throw Error('Temperature API unavailable');const d=await response.json();const observed=d.observationTime?new Date(d.observationTime):null;const validObserved=observed&&Number.isFinite(observed.getTime());const model=d.modelValidUTC?new Date(d.modelValidUTC):null;const validModel=model&&Number.isFinite(model.getTime());if(d.available&&d.waterTempF!=null&&Number.isFinite(Number(d.waterTempF))){setText('water-temp',Number(d.waterTempF).toFixed(1)+'°F');if(d.dataType==='modeled_surface_temperature'){setText('water-temp-detail',validModel?'NOAA modeled · Valid '+pacificTime(model):'NOAA modeled · Forecast surface temperature')}else{setText('water-temp-detail',validObserved?'Observed '+pacificTime(observed):'Recent buoy observation')}}else if(d.status==='stale'&&validObserved){setText('water-temp','--');setText('water-temp-detail','Data delayed · Last observed '+pacificTime(observed))}else{setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}catch(e){console.warn(e);setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}
+async function loadSouthWindGradient(){
+  const value=document.getElementById('gradient-value');
+  const status=document.getElementById('gradient-status');
+  const interpretation=document.getElementById('gradient-interpretation');
+  const explanation=document.getElementById('gradient-explanation');
+  const stations=document.getElementById('gradient-stations');
+  const unavailable=message=>{
+    value.textContent='-- inHg';
+    status.textContent='No current pressure comparison';
+    interpretation.textContent=message;
+    explanation.textContent='Both airport readings must be recent and closely timed. Check observed wind and official marine forecasts instead.';
+    stations.textContent='NOAA Aviation Weather Center · Arlington (KAWO) and Eastsound (KORS)';
+  };
+  try{
+    const response=await fetch('/api/south-wind-gradient',{cache:'no-store'});
+    if(!response.ok)throw Error('South-wind API unavailable');
+    const d=await response.json();
+    const gradient=Number(d.gradientInHg);
+    if(!d.available||d.status!=='current'||d.gradientInHg==null||!Number.isFinite(gradient)){
+      unavailable(d.status==='stale'?'Airport pressure reports are too old':d.status==='time_mismatch'?'Airport observations are not close enough in time':'South-wind indicator temporarily unavailable');
+      return;
+    }
+    const sources=Array.isArray(d.stations)?d.stations:[];
+    const good=sources.length===2&&sources.every(s=>s&&Number.isFinite(Number(s.pressureInHg))&&Number.isFinite(Date.parse(s.observationTime))&&Number(s.ageMinutes)>=-10&&Number(s.ageMinutes)<=90);
+    if(!good){unavailable('Waiting for recent airport pressure readings');return;}
+    const gap=Number(d.gapMinutes);
+    if(!Number.isFinite(gap)||gap>35){unavailable('Airport observations are not close enough in time');return;}
+    value.textContent=(gradient>0?'+':'')+gradient.toFixed(2)+' inHg';
+    status.textContent='NOAA METAR · Current observations';
+    interpretation.textContent=gradient>0?'South-favoring pressure pattern':gradient<0?'Not south-favoring':'Near-zero pressure difference';
+    explanation.textContent=gradient>0&&d.approximateNextHourSouthWind
+       ? 'Local guideline: '+String(d.approximateNextHourSouthWind).replace(/ \(local rule of thumb\)/g,'')+'. Only relevant when regional winds are already predominantly southerly; not an official forecast.'
+       : 'The south-wind lookup does not apply to this pressure difference. Check actual wind observations and official forecasts.';
+    stations.textContent=sources.map(s=>s.station+' '+Number(s.pressureInHg).toFixed(2)+' inHg · '+pacificTime(new Date(s.observationTime))).join('  |  ');
+  }catch(e){console.warn(e);unavailable('South-wind indicator temporarily unavailable');}
+}
+loadSouthWindGradient();
+setInterval(loadSouthWindGradient,10*60*1000);
+
 loadWind();loadTides();loadWaterTemperature();setInterval(loadWind,5*60*1000);setInterval(loadTides,15*60*1000);setInterval(loadWaterTemperature,15*60*1000);
 setText('local-date',new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',year:'numeric'}).format(new Date()));
 // Both pages are served from this same Cloudflare Pages origin. Adjust height to fit the map controls.
