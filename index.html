@@ -21,7 +21,7 @@ header p{margin:0;color:#c9dce6;font-size:clamp(.9rem,1.6vw,1.02rem)}
 .top-links a{color:#e9f5fc;text-decoration:none;font-size:.84rem;padding:6px 11px;border:1px solid #5d8295;border-radius:999px}
 .top-links a:hover{background:#295569}
 main{padding:26px 16px 35px}
-section{margin-bottom:30px}
+section{margin-bottom:26px}
 .section-head{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 13px}
 h2{font-size:1.32rem;letter-spacing:-.015em;margin:0}
 .small{font-size:.83rem;color:var(--muted)}
@@ -34,8 +34,8 @@ h2{font-size:1.32rem;letter-spacing:-.015em;margin:0}
 .detail{font-size:.79rem;color:var(--muted);margin-top:7px;overflow-wrap:anywhere}
 .panel{padding:20px}
 .map-panel{padding:0;overflow:hidden}
-.map-intro{padding:16px 20px 14px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.map-intro p{font-size:.9rem;color:var(--muted);margin:3px 0 0;max-width:840px}
+.map-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
 .open-map{display:inline-flex;align-items:center;text-decoration:none;font-size:.86rem;font-weight:700;white-space:nowrap;border:1px solid var(--border);border-radius:9px;padding:9px 13px}
 .open-map:hover{background:var(--pale)}
 .frame-shell{background:#08131b;position:relative}
@@ -50,7 +50,7 @@ h2{font-size:1.32rem;letter-spacing:-.015em;margin:0}
 footer{padding:6px 16px 28px;color:var(--muted);text-align:center;font-size:.78rem}
 footer p{margin:6px 0}
 @media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:620px){main{padding:19px 12px 22px}header{padding:26px 14px}.cards{gap:9px}.card{min-height:170px;padding:14px 13px}.card-label{margin-bottom:8px}.value{font-size:1.55rem}.detail{font-size:.75rem}.panel{padding:15px}.map-panel{padding:0}.map-intro{padding:15px}.map-foot{padding:12px 15px}.resource-grid{grid-template-columns:1fr}#currents-map{height:1030px}.section-head{align-items:flex-start}section{margin-bottom:24px}}
+@media(max-width:620px){main{padding:19px 12px 22px}header{padding:26px 14px}.cards{gap:9px}.card{min-height:170px;padding:14px 13px}.card-label{margin-bottom:8px}.value{font-size:1.55rem}.detail{font-size:.75rem}.panel{padding:15px}.map-panel{padding:0}.map-actions{width:100%}.map-foot{padding:12px 15px}.resource-grid{grid-template-columns:1fr}#currents-map{height:1030px}.section-head{align-items:flex-start}section{margin-bottom:24px}}
 @media(max-width:365px){.cards{grid-template-columns:1fr}.card{min-height:145px}}
 </style>
 </head>
@@ -73,11 +73,10 @@ footer p{margin:6px 0}
  </div>
 </section>
 <section id="currents" aria-labelledby="currents-heading">
- <div class="section-head"><h2 id="currents-heading">Bellingham Bay Surface Currents</h2><span class="status">NOAA SSCOFS · 24-hour model timeline</span></div>
+ <div class="section-head"><h2 id="currents-heading">24-Hour Surface Current Forecast</h2><div class="map-actions"><span class="status">NOAA SSCOFS · Model guidance</span><a class="open-map" href="/currents-v4-2.html" target="_blank" rel="noopener">Full-screen map ↗</a></div></div>
  <div class="panel map-panel">
-  <div class="map-intro"><div><strong>Animated current-speed heatmap &amp; streamlines</strong><p>Explore how modeled surface currents change through the forecast. Use Play or the timeline beneath the map. Model guidance, not direct water measurements.</p></div><a class="open-map" href="/currents-v4-2.html" target="_blank" rel="noopener">Open full-screen map ↗</a></div>
-  <div class="frame-shell"><iframe id="currents-map" title="Interactive NOAA Bellingham Bay surface current forecast map" src="/currents-v4-2.html" loading="eager" allowfullscreen></iframe></div>
-  <div class="map-foot">Forecast data is downloaded and validated through GitHub Actions and served by Cloudflare Pages. Read the map's timestamps and freshness notice before interpreting forecasts. <a href="/currents-v4-2.html">Map-only view</a>.</div>
+  <div class="frame-shell"><iframe id="currents-map" title="Interactive NOAA Bellingham Bay 24-hour surface current forecast" src="/currents-v4-2.html?embed=1" loading="eager" allowfullscreen></iframe></div>
+  <div class="map-foot">Select a time or press Play beneath the map. Currents are modeled forecasts, not direct measurements; check the forecast-valid time and freshness warning. <a href="/currents-v4-2.html">Map-only view</a>.</div>
  </div>
 </section>
 <section id="resources" aria-labelledby="resources-heading">
