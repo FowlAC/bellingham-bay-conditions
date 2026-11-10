@@ -77,6 +77,11 @@ footer p{margin:6px 0}
 .gradient-title{font-size:1rem;font-weight:730;color:var(--navy);margin:0 0 3px}
 .gradient-reading{font-size:clamp(1.75rem,3vw,2.2rem);font-weight:750;letter-spacing:-.04em;color:var(--navy);line-height:1.2;margin:7px 0 4px}
 .gradient-eyebrow{font-size:.8rem;color:var(--muted)}
+.gradient-reading.waiting{font-size:clamp(1.1rem,2vw,1.4rem);letter-spacing:-.015em;line-height:1.3}
+.gradient-paddler{margin-top:12px;padding:11px 13px;background:#edf5f8;border-left:3px solid #287294;border-radius:6px}
+.gradient-paddler[hidden]{display:none}
+.gradient-paddler-title{font-weight:700;font-size:.84rem;color:var(--navy);margin:0 0 4px}
+.gradient-paddler-text{font-size:.8rem;line-height:1.55;color:var(--text);margin:0}
 .gradient-interpretation{font-size:.95rem;font-weight:650;color:var(--navy);margin:0 0 6px}
 .gradient-explanation{font-size:.79rem;line-height:1.5;color:var(--muted);margin:0}
 .gradient-meta{font-size:.78rem;color:var(--muted);margin-top:10px}
@@ -114,6 +119,10 @@ footer p{margin:6px 0}
    <div>
     <p class="gradient-interpretation" id="gradient-interpretation">Checking the south-wind indicator</p>
     <p class="gradient-explanation" id="gradient-explanation">A positive pressure difference can favor southerly winds. This is an informal Bellingham paddlers' rule of thumb, not an official wind forecast.</p>
+    <div class="gradient-paddler" id="gradient-paddler" hidden>
+      <p class="gradient-paddler-title">What this means for paddlers</p>
+      <p class="gradient-paddler-text" id="gradient-paddler-text"></p>
+    </div>
     <div class="gradient-meta" id="gradient-stations">NOAA Aviation Weather Center · KAWO and KORS</div>
    </div>
   </div>
@@ -170,35 +179,73 @@ async function loadSouthWindGradient(){
   const interpretation=document.getElementById('gradient-interpretation');
   const explanation=document.getElementById('gradient-explanation');
   const stations=document.getElementById('gradient-stations');
-  const unavailable=message=>{
-    value.textContent='-- inHg';
-    status.textContent='No current pressure comparison';
+  const paddler=document.getElementById('gradient-paddler');
+  const paddlerText=document.getElementById('gradient-paddler-text');
+  const guidanceForPaddlers=gradient=>{
+    // The local wiki's guidance is in hundredths of an inch of mercury.
+    // Round to the published precision and avoid interpolating a wind forecast.
+    const n=Math.round(gradient*100);
+    if(n<=0)return null;
+    if(n<=2)return 'The local guide associates this gradient with lighter southerlies (under 10 mph). Conditions can still vary across the bay; check actual wind and webcams.';
+    if(n<=4)return 'The local guide suggests southerlies around 10–15 mph. Wind-driven chop may begin to develop in exposed areas; check actual conditions.';
+    if(n<=6)return 'The local guide suggests southerlies around 15–25 mph. Exposed areas may have more challenging chop; check observed wind, webcams, and the marine forecast.';
+    if(n<=10)return 'The local guide suggests strong southerlies around 25–30 mph. Exposed parts of the bay may have demanding wind-driven chop. Verify actual conditions before launching.';
+    if(n<=12)return 'The local guide suggests southerlies above 30 mph. Exposed waters may be hazardous, even for experienced paddlers. Consult official marine forecasts and local observations.';
+    return 'The gradient is above the guide’s listed ranges. The local guide cautions about possible squalls and abrupt wind changes; no specific speed estimate is reliable from this chart.';
+  };
+  const stationDetails=sources=>{
+    if(!Array.isArray(sources)||!sources.length){
+      return 'NOAA Aviation Weather Center · Arlington (KAWO) and Eastsound (KORS)';
+    }
+    return sources.map(s=>{
+      const name=s.station==='KAWO'?'Arlington (KAWO)':s.station==='KORS'?'Eastsound (KORS)':String(s.station||'Airport');
+      const pressure=s.pressureInHg!=null&&Number.isFinite(Number(s.pressureInHg))?Number(s.pressureInHg).toFixed(2)+' inHg':'pressure unavailable';
+      const date=s.observationTime?new Date(s.observationTime):null;
+      const time=date&&Number.isFinite(date.getTime())?pacificTime(date):'time unavailable';
+      return name+' · '+pressure+' · '+time;
+    }).join('  |  ');
+  };
+  const unavailable=(message,detail,sources)=>{
+    value.textContent='Awaiting synchronized observations';
+    value.classList.add('waiting');
+    paddler.hidden=true;
+    paddlerText.textContent='';
+    status.textContent='Pressure gradient not currently available';
     interpretation.textContent=message;
-    explanation.textContent='Both airport readings must be recent and closely timed. Check observed wind and official marine forecasts instead.';
-    stations.textContent='NOAA Aviation Weather Center · Arlington (KAWO) and Eastsound (KORS)';
+    explanation.textContent=detail||'Both station reports must be recent and no more than 35 minutes apart. No wind estimate is shown until they qualify.';
+    stations.textContent=stationDetails(sources);
   };
   try{
     const response=await fetch('/api/south-wind-gradient',{cache:'no-store'});
     if(!response.ok)throw Error('South-wind API unavailable');
     const d=await response.json();
+    const sources=Array.isArray(d.stations)?d.stations:[];
     const gradient=Number(d.gradientInHg);
     if(!d.available||d.status!=='current'||d.gradientInHg==null||!Number.isFinite(gradient)){
-      unavailable(d.status==='stale'?'Airport pressure reports are too old':d.status==='time_mismatch'?'Airport observations are not close enough in time':'South-wind indicator temporarily unavailable');
+      const gap=Number(d.gapMinutes);
+      const isMismatch=d.status==='time_mismatch';
+      const isStale=d.status==='stale';
+      unavailable(isMismatch?'Reports are not close enough in time':isStale?'Waiting for newer station reports':'Waiting for valid station reports',
+        isMismatch&&Number.isFinite(gap)?'Latest station reports are '+gap+' minutes apart (35-minute limit). They are shown below for reference, but are not combined into a current gradient.':
+        'Both station reports must be recent and within 35 minutes of one another. Latest available reports are shown below; no wind estimate is calculated.',sources);
       return;
     }
-    const sources=Array.isArray(d.stations)?d.stations:[];
-    const good=sources.length===2&&sources.every(s=>s&&Number.isFinite(Number(s.pressureInHg))&&Number.isFinite(Date.parse(s.observationTime))&&Number(s.ageMinutes)>=-10&&Number(s.ageMinutes)<=90);
-    if(!good){unavailable('Waiting for recent airport pressure readings');return;}
+    const good=sources.length===2&&sources.every(s=>s&&s.pressureInHg!=null&&Number.isFinite(Number(s.pressureInHg))&&Number.isFinite(Date.parse(s.observationTime))&&Number(s.ageMinutes)>=-10&&Number(s.ageMinutes)<=90);
+    if(!good){unavailable('Waiting for recent station reports',null,sources);return;}
     const gap=Number(d.gapMinutes);
-    if(!Number.isFinite(gap)||gap>35){unavailable('Airport observations are not close enough in time');return;}
+    if(!Number.isFinite(gap)||gap>35){unavailable('Reports are not close enough in time',Number.isFinite(gap)?'Latest station reports are '+gap+' minutes apart (35-minute limit). No wind estimate is shown.':null,sources);return;}
     value.textContent=(gradient>0?'+':'')+gradient.toFixed(2)+' inHg';
+    value.classList.remove('waiting');
     status.textContent='NOAA METAR · Current observations';
     interpretation.textContent=gradient>0?'South-favoring pressure pattern':gradient<0?'Not south-favoring':'Near-zero pressure difference';
     explanation.textContent=gradient>0&&d.approximateNextHourSouthWind
        ? 'Local guideline: '+String(d.approximateNextHourSouthWind).replace(/ \(local rule of thumb\)/g,'')+'. Only relevant when regional winds are already predominantly southerly; not an official forecast.'
        : 'The south-wind lookup does not apply to this pressure difference. Check actual wind observations and official forecasts.';
-    stations.textContent=sources.map(s=>s.station+' '+Number(s.pressureInHg).toFixed(2)+' inHg · '+pacificTime(new Date(s.observationTime))).join('  |  ');
-  }catch(e){console.warn(e);unavailable('South-wind indicator temporarily unavailable');}
+    const paddlerGuidance=guidanceForPaddlers(gradient);
+    paddler.hidden=!paddlerGuidance;
+    paddlerText.textContent=paddlerGuidance||'';
+    stations.textContent=stationDetails(sources);
+  }catch(e){console.warn(e);unavailable('Station data temporarily unavailable','Could not retrieve NOAA airport observations. Try again later; no wind estimate is shown.');}
 }
 loadSouthWindGradient();
 setInterval(loadSouthWindGradient,10*60*1000);
