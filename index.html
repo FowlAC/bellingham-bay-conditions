@@ -165,7 +165,52 @@ footer p{margin:6px 0}
 const pacificTime = date => new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(date);
 const setText=(id,text)=>{document.getElementById(id).textContent=text};
 const compass = degrees => {if(degrees==null||!Number.isFinite(Number(degrees)))return 'Unknown';const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return dirs[((Math.round(Number(degrees)/22.5)%16)+16)%16]};
-async function loadWind(){try{const response=await fetch('/api/wind',{cache:'no-store'});if(!response.ok)throw Error('Wind API unavailable');const d=await response.json();if(!d.available)throw Error('Wind observation unavailable');const observed=new Date(d.observationTime);if(!Number.isFinite(observed.getTime()))throw Error('Invalid timestamp');const speed=d.windSpeed==null?NaN:Number(d.windSpeed),gust=d.windGust==null?NaN:Number(d.windGust);setText('wind',Number.isFinite(speed)?speed.toFixed(1)+' mph':'--');setText('gust',Number.isFinite(gust)?gust.toFixed(1)+' mph':'--');setText('wind-detail',`${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${pacificTime(observed)}`);setText('gust-detail','Observed '+pacificTime(observed))}catch(e){console.warn(e);setText('wind','--');setText('gust','--');setText('wind-detail','Wind data unavailable');setText('gust-detail','Wind data unavailable')}}
+async function loadWind() {
+  const setSource = (id, text) => {
+    const node = document.getElementById(id);
+    if (node) node.textContent = text;
+  };
+  try {
+    const response = await fetch('/api/wind', {cache:'no-store'});
+    if (!response.ok) throw new Error('Wind API unavailable');
+    const d = await response.json();
+    const observed = d.observationTime ? new Date(d.observationTime) : null;
+    const validTime = observed && Number.isFinite(observed.getTime());
+    if (!d.available) {
+      setText('wind', 'Delayed');
+      setText('gust', 'Delayed');
+      const message = validTime ? 'Se\'lhaem last reported ' + pacificTime(observed) : 'No recent buoy or airport observations';
+      setText('wind-detail', message);
+      setText('gust-detail', message);
+      setSource('wind-source', "NOAA NDBC · Se'lhaem buoy");
+      setSource('gust-source', "NOAA NDBC · Se'lhaem buoy");
+      return;
+    }
+    const speed = d.windSpeed == null ? NaN : Number(d.windSpeed);
+    const gust = d.windGust == null ? NaN : Number(d.windGust);
+    setText('wind', Number.isFinite(speed) ? speed.toFixed(1)+' mph' : 'Not reported');
+    setText('gust', Number.isFinite(gust) ? gust.toFixed(1)+' mph' : 'Not reported');
+    const when = validTime ? pacificTime(observed) : 'time unavailable';
+    if (d.usingFallback) {
+      setText('wind-detail', `${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${when} · Airport observation`);
+      setText('gust-detail', `Airport observation · ${when}`);
+      setSource('wind-source', 'NOAA METAR · Bellingham Airport (KBLI), not bay wind');
+      setSource('gust-source', 'NOAA METAR · Bellingham Airport (KBLI), not bay wind');
+    } else {
+      setText('wind-detail', `${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${when}`);
+      setText('gust-detail', 'Observed '+when);
+      setSource('wind-source', "NOAA NDBC · Se'lhaem buoy");
+      setSource('gust-source', "NOAA NDBC · Se'lhaem buoy");
+    }
+  } catch(e) {
+    console.warn(e);
+    setText('wind', 'Unavailable');
+    setText('gust', 'Unavailable');
+    setText('wind-detail', 'Unable to load NOAA wind observations');
+    setText('gust-detail', 'Unable to load NOAA wind observations');
+  }
+}
+
 async function loadTides(){try{const response=await fetch('/api/tides',{cache:'no-store'});if(!response.ok)throw Error('Tides API unavailable');const d=await response.json();if(!d.available||!d.nextTide)throw Error('No upcoming tide');const t=d.nextTide;const height=Number(t.height),time=new Date(t.time);if(!Number.isFinite(height)||!Number.isFinite(time.getTime()))throw Error('Invalid tide');setText('tide',height.toFixed(1)+' ft');setText('tide-detail',`${t.type} tide · ${pacificTime(time)}`)}catch(e){console.warn(e);setText('tide','--');setText('tide-detail','Tide predictions unavailable')}}
 async function loadWaterTemperature(){try{const response=await fetch('/api/water-temp',{cache:'no-store'});if(!response.ok)throw Error('Temperature API unavailable');const d=await response.json();const observed=d.observationTime?new Date(d.observationTime):null;const validObserved=observed&&Number.isFinite(observed.getTime());const model=d.modelValidUTC?new Date(d.modelValidUTC):null;const validModel=model&&Number.isFinite(model.getTime());if(d.available&&d.waterTempF!=null&&Number.isFinite(Number(d.waterTempF))){setText('water-temp',Number(d.waterTempF).toFixed(1)+'°F');if(d.dataType==='modeled_surface_temperature'){setText('water-temp-detail',validModel?'NOAA modeled · Valid '+pacificTime(model):'NOAA modeled · Forecast surface temperature')}else{setText('water-temp-detail',validObserved?'Observed '+pacificTime(observed):'Recent buoy observation')}}else if(d.status==='stale'&&validObserved){setText('water-temp','--');setText('water-temp-detail','Data delayed · Last observed '+pacificTime(observed))}else{setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}catch(e){console.warn(e);setText('water-temp','--');setText('water-temp-detail','Temperature data unavailable')}}
 async function loadSouthWindGradient(){
