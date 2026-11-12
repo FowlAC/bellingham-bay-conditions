@@ -194,13 +194,13 @@ async function loadWind() {
     if (d.usingFallback) {
       setText('wind-detail', `${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${when} · Airport observation`);
       setText('gust-detail', `Airport observation · ${when}`);
-      setSource('wind-source', 'NOAA METAR · Bellingham Airport (KBLI), not bay wind');
-      setSource('gust-source', 'NOAA METAR · Bellingham Airport (KBLI), not bay wind');
+      setSource('wind-source', 'Bellingham Airport (KBLI) · Land-based');
+      setSource('gust-source', 'Bellingham Airport (KBLI) · Land-based');
     } else {
       setText('wind-detail', `${compass(d.windDirection)} (${d.windDirection??'--'}°) · ${when}`);
       setText('gust-detail', 'Observed '+when);
-      setSource('wind-source', "NOAA NDBC · Se'lhaem buoy");
-      setSource('gust-source', "NOAA NDBC · Se'lhaem buoy");
+      setSource('wind-source', "Se'lhaem Buoy · NOAA");
+      setSource('gust-source', "Se'lhaem Buoy · NOAA");
     }
   } catch(e) {
     console.warn(e);
