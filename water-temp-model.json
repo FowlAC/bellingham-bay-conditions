@@ -2,10 +2,10 @@
   "status": "candidate",
   "source": "NOAA SSCOFS FVCOM",
   "dataType": "modeled_surface_temperature",
-  "temperatureC": 10.53,
-  "temperatureF": 51.0,
-  "modelValidUTC": "2026-11-14T03:00:00Z",
-  "modelCycleUTC": "2026-11-13T21:00:00Z",
+  "temperatureC": 10.46,
+  "temperatureF": 50.8,
+  "modelValidUTC": "2026-11-14T09:00:00Z",
+  "modelCycleUTC": "2026-11-14T03:00:00Z",
   "sampleCenter": {
     "lat": 48.69,
     "lon": -122.55
@@ -14,8 +14,8 @@
   "nodesInArea": 187,
   "validNodes": 187,
   "temperatureRangeC": [
-    10.41,
-    10.57
+    10.4,
+    10.48
   ],
   "selectedSurfaceLayer": 0,
   "sigmaAtSelectedLayer": -0.0158,
@@ -25,7 +25,7 @@
     "node"
   ],
   "temperatureUnitsOriginal": "degrees_C",
-  "sourceFile": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/nosofs/prod/sscofs.20261113/sscofs.t21z.20261113.fields.f006.nc",
+  "sourceFile": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/nosofs/prod/sscofs.20261114/sscofs.t03z.20261114.fields.f006.nc",
   "note": "NOAA modeled surface-water temperature, not a measured observation. Not for navigation.",
-  "generatedUTC": "2026-11-14T03:01:27Z"
+  "generatedUTC": "2026-11-14T09:00:37Z"
 }
