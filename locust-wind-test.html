@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102d3f">
+<title>Locust Beach Wind Station | Bellingham Bay Pilot</title>
+<style>
+:root{color-scheme:light;--navy:#102d3f;--ink:#18354a;--muted:#567080;--border:#d9e5e9;--bg:#eef4f6;--blue:#087e96}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:var(--navy);color:white;padding:24px max(20px,calc((100vw - 990px)/2))}header a{color:#d0f4ff}h1{margin:5px 0 2px;font-size:clamp(1.5rem,4vw,2.2rem);line-height:1.2}
+main{max-width:990px;margin:auto;padding:20px}section{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px #1232}
+h2{font-size:1.18rem;margin:0 0 8px}.eyebrow{font-size:.82rem;letter-spacing:.07em;text-transform:uppercase;color:#b8d3dc}.muted,small{color:var(--muted)}p{margin:10px 0}.meta{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}.chip{background:#edf5f8;color:#234f60;padding:5px 9px;border-radius:8px;font-size:.85rem}
+a{color:#076b88}.iframe-wrap{overflow-x:auto;max-width:100%;border:1px solid var(--border);border-radius:9px;background:#f8fbfc;padding:5px}
+iframe{border:0;display:block;margin:auto;background:#fff}.wide{width:710px;height:330px}.narrow{display:none;width:355px;height:360px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:15px}.actions a{background:#edf5f8;border:1px solid #c9dfe7;border-radius:9px;padding:9px 12px;text-decoration:none;font-weight:600;font-size:.92rem}
+.note{background:#f2f7fa;border-left:4px solid #59a2b7;padding:11px 13px;border-radius:5px}.steps{padding-left:21px}
+footer{text-align:center;padding:16px;color:var(--muted);font-size:.82rem}
+@media(max-width:600px){header{padding:20px}main{padding:13px}section{padding:16px}.wide{display:none}.narrow{display:block}.iframe-wrap{padding:2px}.actions a{width:100%;text-align:center}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">Bellingham Bay Conditions · Source Pilot</div><h1>Locust Beach Wind Station</h1><div>Standalone display test — the live dashboard is unchanged.</div></header>
+<main>
+<section>
+<h2>Locust Beach West · Local wind observation</h2>
+<div class="meta"><span class="chip">Station: KWABELLI326</span><span class="chip">Private weather station</span><span class="chip">Source: Weather Underground / iKitesurf</span></div>
+<p class="muted">This shoreline station may capture local wind patterns that differ from Se’lhaem buoy or Bellingham Airport. Each site has different exposure, and readings should not be treated as interchangeable.</p>
+<div class="iframe-wrap" aria-label="Third-party live wind widget for Locust Beach West">
+<iframe class="wide" loading="lazy" title="Locust Beach West live wind observations — wide" src="https://widgets.ikitesurf.com/widgets/web/currentConditions?activity=Kite&amp;app=ikitesurf&amp;color=002A3A&amp;height=310&amp;include_fx=false&amp;name=Locust+Beach+West&amp;spot_id=26840&amp;units_temp=F&amp;units_wind=mph&amp;width=710" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<iframe class="narrow" loading="lazy" title="Locust Beach West live wind observations — mobile" src="https://widgets.ikitesurf.com/widgets/web/currentConditions?activity=Kite&amp;app=ikitesurf&amp;color=002A3A&amp;height=340&amp;include_fx=false&amp;name=Locust+Beach+West&amp;spot_id=26840&amp;units_temp=F&amp;units_wind=mph&amp;width=355" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+</div>
+<div class="actions"><a href="https://www.wunderground.com/dashboard/pws/KWABELLI326" target="_blank" rel="noopener noreferrer">Open original weather station ↗</a><a href="https://ikitesurf.com/windandwhere.iws?Isection=Current+Wind&amp;regionID=133&amp;siteID=3448" target="_blank" rel="noopener noreferrer">Open iKitesurf Locust Beach ↗</a></div>
+<p class="note"><strong>Important:</strong> This is a provider-hosted widget. The dashboard does not control its refresh timing or guarantee its availability. If the widget does not render, use the station links above. We must confirm provider reuse rights before making a permanent public embed.</p>
+</section>
+<section>
+<h2>What we're testing</h2>
+<ol class="steps"><li>Does the wind speed, gust, direction and last observation time appear?</li><li>Does the widget load on both desktop and iPhone without sign-in?</li><li>Does it update when the station publishes new measurements?</li><li>Is the view easy to read on mobile?</li></ol>
+<p>After testing, a permanent addition could show Locust Beach as a separate observation rather than silently overriding the Se’lhaem buoy/KBLI wind cards. A direct numeric API integration would need a permitted data feed.</p>
+</section>
+</main><footer>Unofficial test page · Observation data belongs to the original station/operator and publishers.</footer>
+</body></html>
