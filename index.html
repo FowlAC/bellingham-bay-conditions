@@ -90,6 +90,9 @@ footer p{margin:6px 0}
 .gradient-foot{font-size:.74rem;color:var(--muted);margin-top:10px}
 @media(max-width:620px){.gradient-panel{padding:16px}.gradient-summary{gap:8px 14px}.gradient-reading{font-size:1.85rem}.gradient-station-list{display:grid;gap:3px}}
 </style>
+<style id="locust-responsive-style">
+@media(max-width:620px){#locust-wind .locust-wide{display:none!important}#locust-wind .locust-mobile{display:block!important}}
+</style>
 </head>
 <body>
 <header><div class="container">
@@ -123,6 +126,25 @@ footer p{margin:6px 0}
   <div class="gradient-station-list" id="gradient-stations" hidden></div>
   <div class="gradient-foot"><a href="https://surfski.wiki/bellingham_local_conditions" target="_blank" rel="noopener noreferrer">Local paddling guideline</a> · Informal wind indicator, not a forecast or safety clearance. Compare with observed wind and official marine forecasts.</div>
  </div>
+</section>
+<!-- Locust Beach wind history: official provider-hosted widget -->
+<section id="locust-wind" aria-labelledby="locust-wind-heading">
+  <div class="section-head">
+    <h2 id="locust-wind-heading">Locust Beach Wind History</h2>
+    <span class="status">Shoreline station · Third-party observations</span>
+  </div>
+  <div class="panel">
+    <p class="small" style="margin:0 0 12px">Locust Beach West provides another perspective on Bellingham Bay wind, including easterly events. Its shoreline exposure differs from Se’lhaem buoy and Bellingham Airport.</p>
+    <div aria-label="Wind history graph legend" style="display:flex;align-items:center;flex-wrap:wrap;gap:12px 24px;margin:10px 0 14px;font-size:.88rem">
+      <span style="display:inline-flex;align-items:center;gap:8px"><span aria-hidden="true" style="display:inline-block;width:27px;height:3px;background:#303f8c"></span>Sustained wind</span>
+      <span style="display:inline-flex;align-items:center;gap:8px"><span aria-hidden="true" style="display:inline-block;width:27px;height:3px;background:#e22d2d"></span>Wind gusts</span>
+    </div>
+    <div style="max-width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:#f8fbfc;padding:6px">
+      <iframe class="locust-wide" title="Locust Beach West wind history — desktop" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://widgets.ikitesurf.com/widgets/web/currentConditions?activity=Kite&amp;app=ikitesurf&amp;color=002A3A&amp;height=310&amp;include_fx=false&amp;name=Locust+Beach+West&amp;spot_id=26840&amp;units_temp=F&amp;units_wind=mph&amp;width=710" style="border:0;display:block;margin:auto;width:710px;height:330px;max-width:none;background:white"></iframe>
+      <iframe class="locust-mobile" title="Locust Beach West wind history — mobile" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://widgets.ikitesurf.com/widgets/web/currentConditions?activity=Kite&amp;app=ikitesurf&amp;color=002A3A&amp;height=340&amp;include_fx=false&amp;name=Locust+Beach+West&amp;spot_id=26840&amp;units_temp=F&amp;units_wind=mph&amp;width=355" style="border:0;display:none;margin:auto;width:355px;height:360px;max-width:none;background:white"></iframe>
+    </div>
+    <p class="small" style="margin:12px 0 0">Provider: iKitesurf / WeatherFlow. Check the widget's observation timestamp; data availability and refresh timing are controlled by the provider. <a href="https://www.wunderground.com/dashboard/pws/KWABELLI326" target="_blank" rel="noopener noreferrer">Station details</a> · <a href="https://ikitesurf.com/windandwhere.iws?Isection=Current+Wind&amp;regionID=133&amp;siteID=3448" target="_blank" rel="noopener noreferrer">View original wind report</a>.</p>
+  </div>
 </section>
 <section id="cameras" aria-labelledby="cameras-heading">
  <div class="section-head"><h2 id="cameras-heading">Live Bay Cameras</h2><span class="status">Third-party streams · availability may vary</span></div>
