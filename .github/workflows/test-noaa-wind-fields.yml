@@ -1,0 +1,29 @@
+name: Test NOAA Bellingham Wind Fields
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wind-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pilot dependencies
+        run: python -m pip install --disable-pip-version-check numpy netCDF4 requests
+      - name: Test math and wind direction
+        run: python scripts/test_sscofs_wind.py --self-test
+      - name: Extract NOAA SSCOFS wind forcing from one forecast file
+        run: python scripts/test_sscofs_wind.py --out wind-pilot.json
+      - name: Upload pilot JSON (no publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bellingham-wind-fields-pilot
+          path: wind-pilot.json
+          if-no-files-found: error
+          retention-days: 7
