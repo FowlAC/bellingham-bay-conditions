@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Manual-only SSCOFS mesh wind map pilot: 9 three-hourly snapshots.
+"""SSCOFS mesh wind map: 9 three-hourly snapshots.
 
-Does not commit or replace any production file. Produces wind-map-preview-data.json.
+Generates a candidate only; separate validation and publication are required.
 Requires numpy, requests, netCDF4; imports existing scripts/update_sscofs.py.
 """
 import argparse
@@ -87,7 +87,7 @@ def make_payload(cycle, timestamps, points, all_vectors):
         'forecastHours':list(HOURS), 'vectorUnits':'decimeters_per_second',
         'vectorConvention':'eastward,northward TO; display direction FROM true north',
         'bounds':[SOUTH,WEST,NORTH,EAST], 'cellCount':len(points),
-        'note':'Manual research pilot only. Wind forcing, not an independently verified local wind forecast. No gust/wave predictions. Not for navigation or safety.'
+        'note':'Experimental NOAA wind forcing, not an independently validated local wind forecast. No gust/wave predictions. Not for navigation or safety.'
         }, 'times':timestamps,'points':np.round(points,5).tolist(),'vectors':all_vectors}
 
 def run(out):
