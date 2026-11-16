@@ -165,10 +165,14 @@ footer p{margin:6px 0}
  <p class="camera-note">Cameras are hosted by their respective operators, not by this dashboard. A camera may be offline or block embedding; use its original-stream link if the player is blank. Images are informational and do not replace conditions observed at your launch site.</p>
 </section>
 <section id="currents" aria-labelledby="currents-heading">
- <div class="section-head"><h2 id="currents-heading">24-Hour Surface Current Forecast</h2><div class="map-actions"><span class="status">NOAA SSCOFS · Model guidance</span><a class="open-map" href="/currents-v4-2.html" target="_blank" rel="noopener">Full-screen map ↗</a></div></div>
+ <div class="section-head"><h2 id="currents-heading">24-Hour Marine Forecast Maps</h2><div class="map-actions"><span class="status">NOAA SSCOFS · Model guidance</span><a class="open-map" id="marine-full-map" href="/currents-v4-2.html" target="_blank" rel="noopener">Full-screen map ↗</a></div></div>
  <div class="panel map-panel">
-  <div class="frame-shell"><iframe id="currents-map" title="Interactive NOAA Bellingham Bay 24-hour surface current forecast" src="/currents-mobile-preview.html?embed=1" loading="eager" allowfullscreen></iframe></div>
-  <div class="map-foot">Swipe vertically over the map to scroll this page. Tap the water for a local current reading; open the full-screen map for unrestricted panning and zooming. Select a time or press Play beneath the map. Currents are modeled forecasts, not direct measurements; check the forecast-valid time and freshness warning. <a href="/currents-v4-2.html">Map-only view</a>.</div>
+  <div id="wind-currents-tabs" role="group" aria-label="Marine forecast map" style="display:flex;gap:9px;padding:14px 15px;flex-wrap:wrap;background:#fff">
+   <button type="button" id="marine-current-tab" aria-pressed="true" style="background:#17648c;color:white;border:1px solid #17648c;padding:10px 17px;border-radius:9px;font:inherit;font-weight:700;cursor:pointer">Surface Currents</button>
+   <button type="button" id="marine-wind-tab" aria-pressed="false" style="background:#fff;color:#17648c;border:1px solid #17648c;padding:10px 17px;border-radius:9px;font:inherit;font-weight:700;cursor:pointer">Wind Forecast (preview)</button>
+  </div>
+  <div class="frame-shell"><iframe id="currents-map" title="Interactive NOAA Bellingham Bay 24-hour surface current forecast" src="/currents-mobile-preview.html?embed=1" loading="eager" allowfullscreen></iframe><iframe id="wind-map-embedded" title="NOAA Bellingham Bay wind forecast preview" data-src="/wind-map-preview.html?embed=1" loading="lazy" allowfullscreen hidden style="display:none;width:100%;height:880px;border:0;background:#07131d"></iframe></div>
+  <div class="map-foot" id="marine-map-caption">Swipe vertically over the map to scroll this page. Tap the water for a local current reading; open the full-screen map for unrestricted panning and zooming. Select a time or press Play beneath the map. Currents are modeled forecasts, not direct measurements; check the forecast-valid time and freshness warning. <a href="/currents-v4-2.html">Map-only view</a>.</div>
  </div>
 </section>
 <section id="resources" aria-labelledby="resources-heading">
@@ -316,4 +320,10 @@ frame.addEventListener('load',()=>{fitFrame();try{if('ResizeObserver'in window){
 window.addEventListener('resize',()=>setTimeout(fitFrame,100));
 
 </script>
-</body></html>
+<script>
+(function(){
+const current=document.getElementById('currents-map'),wind=document.getElementById('wind-map-embedded');const c=document.getElementById('marine-current-tab'),w=document.getElementById('marine-wind-tab'),full=document.getElementById('marine-full-map'),foot=document.getElementById('marine-map-caption');if(!current||!wind)return;
+function setTab(name){const isWind=name==='wind';if(isWind&&!wind.src)wind.src=wind.dataset.src;current.hidden=isWind;current.style.display=isWind?'none':'block';wind.hidden=!isWind;wind.style.display=isWind?'block':'none';c.setAttribute('aria-pressed',String(!isWind));w.setAttribute('aria-pressed',String(isWind));for(const [el,active] of [[c,!isWind],[w,isWind]]){el.style.background=active?'#17648c':'white';el.style.color=active?'white':'#17648c'}full.href=isWind?'/wind-map-preview.html':'/currents-v4-2.html';foot.textContent=isWind?'Wind is NOAA model forcing, not an independently validated local forecast. This pilot uses manually generated data; inspect the forecast-valid times and expired-data warning. Check observed conditions and official forecasts. The current map and NOAA automated current updates remain unchanged.':'Swipe vertically over the map to scroll this page. Tap the water for a local current reading; open the full-screen map for unrestricted panning and zooming. Select a time or press Play beneath the map. Currents are modeled forecasts, not direct measurements; check the forecast-valid time and freshness warning.';}
+c.addEventListener('click',()=>setTab('current'));w.addEventListener('click',()=>setTab('wind'));
+})();
+</script></body></html>
