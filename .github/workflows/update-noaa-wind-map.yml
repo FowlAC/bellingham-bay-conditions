@@ -1,0 +1,80 @@
+name: Update NOAA Bellingham Wind Map
+
+on:
+  schedule:
+    # Same six-hour cadence as the current pipeline, offset to reduce NOAA load.
+    - cron: '42 2,8,14,20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Share the existing publishing lock with currents/temperature workflow.
+  group: bellingham-noaa-publish
+  cancel-in-progress: false
+
+jobs:
+  update-wind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install NOAA dependencies
+        run: python -m pip install --disable-pip-version-check numpy requests netCDF4
+      - name: Run offline validation tests
+        run: |
+          python scripts/build_wind_map_preview.py --self-test
+          python scripts/validate_wind_map.py --self-test
+      - name: Generate NOAA wind forecast candidate
+        run: python scripts/build_wind_map_preview.py --out wind-candidate.json
+      - name: Validate candidate and compare with published data
+        id: wind
+        run: |
+          python scripts/validate_wind_map.py \
+            --candidate wind-candidate.json \
+            --existing wind-map-preview-data.json \
+            --github-output "$GITHUB_OUTPUT"
+      - name: Publish only a strictly newer complete forecast
+        if: steps.wind.outputs.publish == 'true'
+        run: |
+          set -eu
+          # Refresh first, in case main moved since this run checked out.
+          git pull --rebase origin main
+          # Re-check against updated main; never replace a newer forecast.
+          python scripts/validate_wind_map.py \
+            --candidate wind-candidate.json \
+            --existing wind-map-preview-data.json \
+            --github-output "$GITHUB_OUTPUT"
+          # Check the updated comparison result rather than using stale step outputs.
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          c=json.loads(Path('wind-candidate.json').read_text())
+          p=Path('wind-map-preview-data.json')
+          if p.exists():
+              old=json.loads(p.read_text())
+              assert c['metadata']['modelCycleUTC'] > old['metadata']['modelCycleUTC'], 'Newer published forecast already exists'
+          PY
+          mv wind-candidate.json wind-map-preview-data.json
+          git add wind-map-preview-data.json
+          if git diff --cached --quiet; then
+            echo 'No wind-map changes.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Update NOAA Bellingham wind forecast'
+            git push origin HEAD:main
+          fi
+      - name: Retain existing data when unchanged
+        if: steps.wind.outputs.publish != 'true'
+        run: echo 'No newer complete wind forecast; existing published wind file retained.'
